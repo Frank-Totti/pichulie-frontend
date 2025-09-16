@@ -1,9 +1,23 @@
 class TaskManager {
   constructor() {
     this.tasks = {
-      "to do": [{ id: 1, title: "Do math homework", time: "7:30 AM", reminder: true }],
-      "in process": [{ id: 2, title: "Do english homework", time: "10:30 AM", reminder: false }],
-      "finished": [{ id: 3, title: "Do biology homework", time: "5:00 AM", reminder: false }],
+      // Internamente trabajamos con las columnas del DOM: todo | inprocess | finished
+      todo: [{ id: 1, title: "Do math homework", time: "7:30 AM", reminder: true }],
+      inprocess: [{ id: 2, title: "Do english homework", time: "10:30 AM", reminder: false }],
+      finished: [{ id: 3, title: "Do biology homework", time: "5:00 AM", reminder: false }],
+    }
+
+    // Mapear estados del backend <-> columnas del frontend
+    this.statusToColumn = {
+      "to do": "todo",
+      "in process": "inprocess",
+      "finished": "finished",
+    }
+
+    this.columnToStatus = {
+      todo: "to do",
+      inprocess: "in process",
+      finished: "finished",
     }
 
     //this.currentDate = new Date()//.toISOString().split("T")[0];
@@ -27,16 +41,10 @@ class TaskManager {
   }
 
   async todayButton(){
-
-    document.getElementById("today").addEventListener("click", async function (e) {
+    document.getElementById("today").addEventListener("click", async (e) => {
       e.preventDefault();
-
-
-
-        this.renderTasks(this.currentDate.toISOString().split("T")[0]);
-
-    }) 
-
+      this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+    })
   }
 
   bindEvents() {
@@ -163,13 +171,14 @@ class TaskManager {
   
     // Validar status seleccionado
     const statusRadios = document.querySelectorAll('input[name="status"]');
-    let column = "to do"; // default
+    let status = "to do"; // default backend status
     for (const radio of statusRadios) {
       if (radio.checked) {
-        column = radio.value; // Debe ser exactamente "to do", "in process" o "finished"
+        status = radio.value; // "to do" | "in process" | "finished"
         break;
       }
     }
+    const column = this.statusToColumn[status];
   
     if (!title) {
       alert("Please enter a task title");
@@ -196,7 +205,7 @@ class TaskManager {
     const bodyData = {
       title,
       detail: description,
-      status: column,
+      status: status,
       task_date: taskDateTime
     };
   
@@ -204,14 +213,28 @@ class TaskManager {
     console.log("Token:", token);
   
     try {
-      const response = await fetch("http://localhost:3000/api/task/new", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(bodyData)
-      });
+      let response;
+      if (this.editingTask) {
+        // PUT update existing task
+        response = await fetch(`http://localhost:3000/api/task/update/${this.editingTask.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(bodyData)
+        });
+      } else {
+        // POST create new task
+        response = await fetch("http://localhost:3000/api/task/new", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(bodyData)
+        });
+      }
   
       console.log("Response status:", response.status);
   
@@ -231,39 +254,16 @@ class TaskManager {
         throw new Error("Backend did not return valid JSON: " + rawText);
       }
   
-      console.log("Task created successfully:", data);
+      console.log(this.editingTask ? "Task updated successfully:" : "Task created successfully:", data);
   
       // Reset form
       //document.getElementById("taskModal").reset();
   
-      alert("Task created successfully!");
-  
-      // Actualizar lista de tareas localmente
-      if (this.editingTask) {
-        const task = this.tasks[this.editingTask.column].find(t => t.id === this.editingTask.id);
-        if (task) {
-          task.title = title;
-          task.time = time ? this.formatTime(time) : "";
-          task.description = description;
-          task.reminder = reminder;
-  
-          if (this.editingTask.column !== column) {
-            this.moveTask(this.editingTask.id, this.editingTask.column, column);
-          }
-        }
-        this.editingTask = null;
-      } else {
-        const newTask = {
-          id: Date.now(),
-          title,
-          time: time ? this.formatTime(time) : "",
-          description,
-          reminder,
-        };
-        this.tasks[column].push(newTask);
-      }
-  
-      this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+      alert(this.editingTask ? "Task updated successfully!" : "Task created successfully!");
+
+      // Recargar desde backend para mantener sincronía
+      this.editingTask = null;
+      await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
       this.closeModal();
   
     } catch (error) {
@@ -315,10 +315,14 @@ class TaskManager {
         // Agrupar y renderizar tareas como antes
         const tasksByColumn = { todo: [], inprocess: [], finished: [] };
         tasksArray.forEach(task => {
-            if (task.status === "to do") tasksByColumn.todo.push(task);
-            else if (task.status === "in process") tasksByColumn.inprocess.push(task);
-            else if (task.status === "finished") tasksByColumn.finished.push(task);
+            const column = this.statusToColumn[task.status];
+            if (column) {
+              tasksByColumn[column].push(task);
+            }
         });
+
+        // Mantener this.tasks sincronizado con backend
+        this.tasks = tasksByColumn;
 
         Object.keys(tasksByColumn).forEach(column => {
             const taskList = document.querySelector(`[data-column="${column}"]`);
@@ -339,7 +343,8 @@ class TaskManager {
   createTaskCard(task, column) {
     const card = document.createElement("div")
     card.className = "task-card"
-    card.dataset.taskId = task.id
+    // Usar _id si viene de Mongo, o id local como fallback
+    card.dataset.taskId = task._id || task.id
     card.dataset.column = column
 
     card.innerHTML = `
@@ -397,7 +402,8 @@ class TaskManager {
 
   handleContextMenuAction(e) {
     const action = e.target.dataset.action
-    const taskId = Number.parseInt(e.target.dataset.taskId)
+    // Usar el id tal cual (Mongo _id es string)
+    const taskId = e.target.dataset.taskId
     const column = e.target.dataset.column
 
     this.hideContextMenu()
@@ -410,26 +416,40 @@ class TaskManager {
   }
 
   editTask(taskId, column) {
-    const task = this.tasks[column].find((t) => t.id === taskId)
+    const task = this.tasks[column].find((t) => (t._id || t.id) === taskId)
     if (!task) return
 
     // Pre-fill modal with task data
-    document.getElementById("taskTitle").value = task.title
-    document.getElementById("taskTime").value = task.time ? this.convertTo24Hour(task.time) : "12:00"
-    document.getElementById("taskDate").value = new Date().toISOString().split("T")[0]
-    document.getElementById("taskDescription").value = task.description || ""
+    const titleEl = document.getElementById("taskTitle");
+    if (titleEl) titleEl.value = task.title || ""
+    const timeEl = document.getElementById("taskTime");
+    if (timeEl) {
+      if (task.time && typeof task.time === 'string' && task.time.includes(' ')) {
+        timeEl.value = this.convertTo24Hour(task.time)
+      } else if (task.time && typeof task.time === 'string' && task.time.includes(':')) {
+        timeEl.value = task.time
+      } else {
+        timeEl.value = "12:00"
+      }
+    }
+    const descEl = document.getElementById("taskDescription");
+    if (descEl) descEl.value = task.description || ""
 
     // Set status radio button
-    if (column === "to do") {
-      document.getElementById("statusTodo").checked = true
-    } else if (column === "in process") {
-      document.getElementById("statusInProcess").checked = true
-    } else if (column === "finished") {
-      document.getElementById("statusFinished").checked = true
-    }
+    const status = this.columnToStatus[column]
+    const stTodo = document.getElementById("statusTodo")
+    const stIn = document.getElementById("statusInProcess")
+    const stFin = document.getElementById("statusFinished")
+    if (stTodo) stTodo.checked = false
+    if (stIn) stIn.checked = false
+    if (stFin) stFin.checked = false
+    if (status === 'to do' && stTodo) stTodo.checked = true
+    if (status === 'in process' && stIn) stIn.checked = true
+    if (status === 'finished' && stFin) stFin.checked = true
 
     // Set reminder checkbox
-    document.getElementById("taskReminder").checked = task.reminder || false
+    const remEl = document.getElementById("taskReminder");
+    if (remEl) remEl.checked = task.reminder || false
 
     // Store editing task info
     this.editingTask = { id: taskId, column: column }
@@ -452,7 +472,7 @@ class TaskManager {
   }
 
   deleteTaskWithConfirmation(taskId, column) {
-    const task = this.tasks[column].find((t) => t.id === taskId)
+    const task = this.tasks[column].find((t) => (t._id || t.id) === taskId)
     if (!task) return
 
     this.showDeleteModal(task, taskId, column)
@@ -489,7 +509,7 @@ class TaskManager {
   moveTask(taskId, fromColumn, toColumn) {
     if (fromColumn === toColumn) return
 
-    const taskIndex = this.tasks[fromColumn].findIndex((task) => task.id === taskId)
+    const taskIndex = this.tasks[fromColumn].findIndex((task) => (task._id || task.id) === taskId)
     if (taskIndex === -1) return
 
     const task = this.tasks[fromColumn].splice(taskIndex, 1)[0]
@@ -498,7 +518,7 @@ class TaskManager {
   }
 
   deleteTask(taskId, column) {
-    const taskIndex = this.tasks[column].findIndex((task) => task.id === taskId)
+    const taskIndex = this.tasks[column].findIndex((task) => (task._id || task.id) === taskId)
     if (taskIndex !== -1) {
       this.tasks[column].splice(taskIndex, 1)
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
