@@ -83,7 +83,7 @@ class TaskManager {
     const editProfileBtn = document.getElementById("editProfile")
     const logoutBtn = document.getElementById("logoutBtn")
     if (editProfileBtn) editProfileBtn.addEventListener("click", () => alert("Editar perfil (accion placeholder)"))
-    if (logoutBtn) logoutBtn.addEventListener("click", () => alert("Cerrar Sesión (accion placeholder)"))
+    if (logoutBtn) logoutBtn.addEventListener("click", () => this.performLogout())
 
     // Close modal on overlay click
     document.querySelector(".modal-overlay").addEventListener("click", (e) => {
@@ -599,6 +599,51 @@ class TaskManager {
   showTrash() {
     console.log("Show trash functionality")
     // Lógica para mostrar la basura (Me falta)
+  }
+
+  /**
+   * Performs user logout by calling backend endpoint and cleaning local storage
+   */
+  async performLogout() {
+    try {
+      // Get the stored token
+      const token = localStorage.getItem('token');
+      
+      if (token) {
+        // Call the backend logout endpoint
+        const response = await fetch('http://localhost:3000/api/users/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data.message);
+        } else {
+          console.warn('Logout endpoint failed, but proceeding with client-side logout');
+        }
+      }
+
+      // Clear localStorage regardless of backend response
+      localStorage.removeItem('token');
+      localStorage.removeItem('id');
+      
+      console.log('User logged out successfully');
+      
+      // Redirect to login page
+      window.location.href = '../../index.html';
+      
+    } catch (error) {
+      console.error('Error during logout:', error);
+      
+      // Even if there's an error, clear the session and redirect
+      localStorage.removeItem('token');
+      localStorage.removeItem('id');
+      window.location.href = '../../index.html';
+    }
   }
 }
 
