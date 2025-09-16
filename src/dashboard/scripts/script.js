@@ -1,4 +1,3 @@
-
 class TaskManager {
   constructor() {
     this.tasks = {
@@ -82,7 +81,7 @@ class TaskManager {
     // Dropdown item actions
     const editProfileBtn = document.getElementById("editProfile")
     const logoutBtn = document.getElementById("logoutBtn")
-    if (editProfileBtn) editProfileBtn.addEventListener("click", () => alert("Editar perfil (accion placeholder)"))
+    if (editProfileBtn) editProfileBtn.addEventListener("click", () => this.editProfile())
     if (logoutBtn) logoutBtn.addEventListener("click", () => this.performLogout())
 
     // Close modal on overlay click
@@ -265,9 +264,6 @@ class TaskManager {
       alert("An error occurred while creating the task. Check the console for details.");
     }
   }
-  
-  
-  
   
 
 
@@ -645,7 +641,13 @@ class TaskManager {
       window.location.href = '../../index.html';
     }
   }
+  async editProfile(){
+
+    window.location.href = '../profile/edit-profile.html';
+  
+  }
 }
+
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", () => {
