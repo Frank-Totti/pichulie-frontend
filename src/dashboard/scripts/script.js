@@ -2,9 +2,22 @@
 class TaskManager {
   constructor() {
     this.tasks = {
-      "to do": [{ id: 1, title: "Do math homework", time: "7:30 AM", reminder: true }],
-      "in process": [{ id: 2, title: "Do english homework", time: "10:30 AM", reminder: false }],
+      "todo": [{ id: 1, title: "Do math homework", time: "7:30 AM", reminder: true }],
+      "inprocess": [{ id: 2, title: "Do english homework", time: "10:30 AM", reminder: false }],
       "finished": [{ id: 3, title: "Do biology homework", time: "5:00 AM", reminder: false }],
+    }
+
+    // Mapeo entre status del backend y claves del frontend
+    this.statusToColumn = {
+      "to do": "todo",
+      "in process": "inprocess", 
+      "finished": "finished"
+    }
+
+    this.columnToStatus = {
+      "todo": "to do",
+      "inprocess": "in process",
+      "finished": "finished"
     }
 
     this.currentDate = new Date()//.toISOString().split("T")[0];
@@ -157,13 +170,14 @@ class TaskManager {
   
     // Validar status seleccionado
     const statusRadios = document.querySelectorAll('input[name="status"]');
-    let column = "to do"; // default
+    let status = "to do"; // default
     for (const radio of statusRadios) {
       if (radio.checked) {
-        column = radio.value; // Debe ser exactamente "to do", "in process" o "finished"
+        status = radio.value; // Debe ser exactamente "to do", "in process" o "finished"
         break;
       }
     }
+    const column = this.statusToColumn[status];
   
     if (!title) {
       alert("Please enter a task title");
@@ -190,7 +204,7 @@ class TaskManager {
     const bodyData = {
       title,
       detail: description,
-      status: column,
+      status: status,
       task_date: taskDateTime
     };
   
@@ -198,14 +212,39 @@ class TaskManager {
     console.log("Token:", token);
   
     try {
-      const response = await fetch("http://localhost:3000/api/task/new", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(bodyData)
-      });
+      // TODO: Implementar fetch al backend aquí
+      let response;
+      if (this.editingTask) {
+        // Update existing task
+        // TODO: Implementar petición PUT para actualizar tarea
+        // Ejemplo:
+        // response = await fetch(`http://localhost:3000/api/task/update/${this.editingTask.id}`, {
+        //   method: "PUT",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     "Authorization": `Bearer ${token}`
+        //   },
+        //   body: JSON.stringify(bodyData)
+        // });
+        
+        // Por ahora, simular respuesta exitosa
+        response = { status: 200, json: () => Promise.resolve({ message: "Task updated successfully" }) };
+      } else {
+        // Create new task
+        // TODO: Implementar petición POST para crear nueva tarea
+        // Ejemplo:
+        // response = await fetch("http://localhost:3000/api/task/new", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     "Authorization": `Bearer ${token}`
+        //   },
+        //   body: JSON.stringify(bodyData)
+        // });
+        
+        // Por ahora, simular respuesta exitosa
+        response = { status: 201, json: () => Promise.resolve({ message: "Task created successfully" }) };
+      }
   
       console.log("Response status:", response.status);
   
@@ -225,39 +264,24 @@ class TaskManager {
         throw new Error("Backend did not return valid JSON: " + rawText);
       }
   
-      console.log("Task created successfully:", data);
+      if (this.editingTask) {
+        console.log("Task updated successfully:", data);
+        alert("Task updated successfully!");
+      } else {
+        console.log("Task created successfully:", data);
+        alert("Task created successfully!");
+      }
   
       // Reset form
       //document.getElementById("taskModal").reset();
   
-      alert("Task created successfully!");
-  
-      // Actualizar lista de tareas localmente
-      if (this.editingTask) {
-        const task = this.tasks[this.editingTask.column].find(t => t.id === this.editingTask.id);
-        if (task) {
-          task.title = title;
-          task.time = time ? this.formatTime(time) : "";
-          task.description = description;
-          task.reminder = reminder;
-  
-          if (this.editingTask.column !== column) {
-            this.moveTask(this.editingTask.id, this.editingTask.column, column);
-          }
-        }
-        this.editingTask = null;
-      } else {
-        const newTask = {
-          id: Date.now(),
-          title,
-          time: time ? this.formatTime(time) : "",
-          description,
-          reminder,
-        };
-        this.tasks[column].push(newTask);
-      }
-  
-      this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+      // TODO: Recargar tareas desde el servidor después de guardar
+      this.editingTask = null;
+
+      // TODO: Descomentar cuando implementes el backend
+      // this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+      
+      // Por ahora, solo cerrar el modal
       this.closeModal();
   
     } catch (error) {
@@ -286,36 +310,47 @@ class TaskManager {
 }*/
   async renderTasks(fecha) {
     try {
+        // TODO: Implementar fetch al backend para obtener tareas
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No auth token found. Please login.");
 
-        const response = await fetch("http://localhost:3000/api/task/by-date", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body:JSON.stringify({
-              user_id :localStorage.getItem("id"),
-              task_date : fecha
-            })
+        // TODO: Descomentar cuando implementes el backend
+        // const response = await fetch("http://localhost:3000/api/task/by-date", {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         "Authorization": `Bearer ${token}`
+        //     },
+        //     body:JSON.stringify({
+        //       user_id :localStorage.getItem("id"),
+        //       task_date : fecha
+        //     })
+        // });
 
-        });
+        // if (!response.ok) {
+        //     throw new Error(`Error fetching tasks: ${response.status}`);
+        // }
 
-        if (!response.ok) {
-            throw new Error(`Error fetching tasks: ${response.status}`);
-        }
+        // const data = await response.json();
+        // const tasksArray = data.tasks;
 
-        const data = await response.json();
-        const tasksArray = data.tasks;
+        // Por ahora, usar tareas de ejemplo
+        const tasksArray = [
+          { _id: "1", title: "Tarea de ejemplo 1", detail: "Descripción 1", status: "to do", task_date: fecha, remember: false },
+          { _id: "2", title: "Tarea de ejemplo 2", detail: "Descripción 2", status: "in process", task_date: fecha, remember: true }
+        ];
 
         // Agrupar y renderizar tareas como antes
         const tasksByColumn = { todo: [], inprocess: [], finished: [] };
         tasksArray.forEach(task => {
-            if (task.status === "to do") tasksByColumn.todo.push(task);
-            else if (task.status === "in process") tasksByColumn.inprocess.push(task);
-            else if (task.status === "finished") tasksByColumn.finished.push(task);
+            const column = this.statusToColumn[task.status];
+            if (column) {
+                tasksByColumn[column].push(task);
+            }
         });
+
+        // Actualizar this.tasks con los datos del backend
+        this.tasks = tasksByColumn;
 
         Object.keys(tasksByColumn).forEach(column => {
             const taskList = document.querySelector(`[data-column="${column}"]`);
@@ -336,7 +371,7 @@ class TaskManager {
   createTaskCard(task, column) {
     const card = document.createElement("div")
     card.className = "task-card"
-    card.dataset.taskId = task.id
+    card.dataset.taskId = task._id || task.id  // Use _id from MongoDB or fallback to id
     card.dataset.column = column
 
     card.innerHTML = `
@@ -394,7 +429,7 @@ class TaskManager {
 
   handleContextMenuAction(e) {
     const action = e.target.dataset.action
-    const taskId = Number.parseInt(e.target.dataset.taskId)
+    const taskId = e.target.dataset.taskId  // Keep as string to match backend IDs
     const column = e.target.dataset.column
 
     this.hideContextMenu()
@@ -407,26 +442,58 @@ class TaskManager {
   }
 
   editTask(taskId, column) {
-    const task = this.tasks[column].find((t) => t.id === taskId)
+    const task = this.tasks[column].find((t) => (t._id || t.id) === taskId)
     if (!task) return
 
     // Pre-fill modal with task data
-    document.getElementById("taskTitle").value = task.title
-    document.getElementById("taskTime").value = task.time ? this.convertTo24Hour(task.time) : "12:00"
-    document.getElementById("taskDate").value = new Date().toISOString().split("T")[0]
-    document.getElementById("taskDescription").value = task.description || ""
+    const titleElement = document.getElementById("taskTitle")
+    if (titleElement) {
+      titleElement.value = task.title || ""
+    }
+    
+    // Handle time field - check if it exists and has the right format
+    const timeElement = document.getElementById("taskTime")
+    if (timeElement) {
+      if (task.time && typeof task.time === 'string' && task.time.includes(' ')) {
+        // Format: "7:30 AM" - convert to 24 hour
+        timeElement.value = this.convertTo24Hour(task.time)
+      } else if (task.time && typeof task.time === 'string' && task.time.includes(':')) {
+        // Format: "07:30" - already in 24 hour format
+        timeElement.value = task.time
+      } else {
+        // No time or invalid format
+        timeElement.value = "12:00"
+      }
+    }
+    
+    const descriptionElement = document.getElementById("taskDescription")
+    if (descriptionElement) {
+      descriptionElement.value = task.description || ""
+    }
 
     // Set status radio button
-    if (column === "to do") {
-      document.getElementById("statusTodo").checked = true
-    } else if (column === "in process") {
-      document.getElementById("statusInProcess").checked = true
-    } else if (column === "finished") {
-      document.getElementById("statusFinished").checked = true
+    const status = this.columnToStatus[column];
+    const statusTodo = document.getElementById("statusTodo")
+    const statusInProcess = document.getElementById("statusInProcess")
+    const statusFinished = document.getElementById("statusFinished")
+    
+    if (statusTodo) statusTodo.checked = false
+    if (statusInProcess) statusInProcess.checked = false
+    if (statusFinished) statusFinished.checked = false
+    
+    if (status === "to do" && statusTodo) {
+      statusTodo.checked = true
+    } else if (status === "in process" && statusInProcess) {
+      statusInProcess.checked = true
+    } else if (status === "finished" && statusFinished) {
+      statusFinished.checked = true
     }
 
     // Set reminder checkbox
-    document.getElementById("taskReminder").checked = task.reminder || false
+    const reminderElement = document.getElementById("taskReminder")
+    if (reminderElement) {
+      reminderElement.checked = task.reminder || false
+    }
 
     // Store editing task info
     this.editingTask = { id: taskId, column: column }
@@ -449,7 +516,7 @@ class TaskManager {
   }
 
   deleteTaskWithConfirmation(taskId, column) {
-    const task = this.tasks[column].find((t) => t.id === taskId)
+    const task = this.tasks[column].find((t) => (t._id || t.id) === taskId)
     if (!task) return
 
     this.showDeleteModal(task, taskId, column)
@@ -486,7 +553,7 @@ class TaskManager {
   moveTask(taskId, fromColumn, toColumn) {
     if (fromColumn === toColumn) return
 
-    const taskIndex = this.tasks[fromColumn].findIndex((task) => task.id === taskId)
+    const taskIndex = this.tasks[fromColumn].findIndex((task) => (task._id || task.id) === taskId)
     if (taskIndex === -1) return
 
     const task = this.tasks[fromColumn].splice(taskIndex, 1)[0]
@@ -495,7 +562,7 @@ class TaskManager {
   }
 
   deleteTask(taskId, column) {
-    const taskIndex = this.tasks[column].findIndex((task) => task.id === taskId)
+    const taskIndex = this.tasks[column].findIndex((task) => (task._id || task.id) === taskId)
     if (taskIndex !== -1) {
       this.tasks[column].splice(taskIndex, 1)
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
