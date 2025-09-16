@@ -1,4 +1,4 @@
-import { showAlert } from './shared.js'
+//import { showAlert } from './shared.js'
 
 export class EditProfileController {
   constructor() {
@@ -27,6 +27,18 @@ export class EditProfileController {
   }
 
   bindEvents() {
+
+    const todayBtn = document.getElementById("today-button");
+    if (todayBtn) {
+      todayBtn.addEventListener("click", () => {
+        console.log("Today button clicked");
+        localStorage.setItem("currentDate", new Date());
+        window.location.href = '../dashboard/dashboard.html';
+      });
+    } else {
+      console.error("today-button no encontrado en bindEvents");
+    }
+
     // Form submission
     if (this.form) {
       this.form.addEventListener('submit', (e) => this.handleFormSubmit(e))
@@ -385,7 +397,15 @@ export class EditProfileController {
     const passwordField = document.getElementById('userPassword')
     return passwordField && passwordField.value.trim() !== ''
   }
+/*
+  async todayButton(){
+    console.log("Today button clicked");
+    localStorage.setItem("currentDate",new Date());
+    window.location.href = '../dashboard/dashboard.html';
+  }
+*/
 }
+
 
 // Initialize when DOM is ready
 function initializeEditProfile() {
