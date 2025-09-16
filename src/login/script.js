@@ -34,7 +34,7 @@ document.getElementById("login").addEventListener("click",async function (e) {
 
         //document.getElementById("resultado").innerText = "Bienvenido " + data.user.name;
 
-        window.location.href = "/src/dashboard/dashboard.html"; // Ajustar a view principal
+        window.location.href = "../../dashboard/dashboard.html"; // Ajustar a view principal
 
     } catch (error) {
         alert(error.message);
