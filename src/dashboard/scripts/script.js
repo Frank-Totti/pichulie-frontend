@@ -6,7 +6,14 @@ class TaskManager {
       "finished": [{ id: 3, title: "Do biology homework", time: "5:00 AM", reminder: false }],
     }
 
-    this.currentDate = new Date()//.toISOString().split("T")[0];
+    //this.currentDate = new Date()//.toISOString().split("T")[0];
+    const savedDate = localStorage.getItem("currentDate");
+    if (savedDate) {
+        this.currentDate = new Date(savedDate);
+    } else {
+        this.currentDate = new Date();
+        localStorage.setItem("currentDate", this.currentDate.toISOString());
+    }
     //this.day = new Date().toISOString().split("T")[0];
     this.init()
   }
@@ -500,6 +507,7 @@ class TaskManager {
 
   changeDate(direction) {
     this.currentDate.setDate(this.currentDate.getDate() + direction)
+    localStorage.setItem("currentDate", this.currentDate);//.toISOString());
     this.updateDateDisplay()
     this.updateHeaderDate()
     this.renderTasks(this.currentDate.toISOString().split("T")[0])
