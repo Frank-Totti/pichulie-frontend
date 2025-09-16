@@ -215,7 +215,7 @@ class TaskManager {
           task_date: taskDateTime
         };
   
-        response = await fetch(`http://localhost:3000/api/task/edit/${taskId}`, {
+        response = await fetch(`https://pichulie-backend.onrender.com/api/task/edit/${taskId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -232,7 +232,7 @@ class TaskManager {
           task_date: taskDateTime
         };
   
-        response = await fetch("http://localhost:3000/api/task/new", {
+        response = await fetch("https://pichulie-backend.onrender.com/api/task/new", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -286,7 +286,7 @@ class TaskManager {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No auth token found. Please login.");
 
-        const response = await fetch("http://localhost:3000/api/task/by-date", {
+        const response = await fetch("https://pichulie-backend.onrender.com/api/task/by-date", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -440,7 +440,7 @@ class TaskManager {
   
     try {
       const token = localStorage.getItem("token"); // ⚡ importante: JWT
-      const res = await fetch(`http://localhost:3000/tasks/edit/${taskId}`, {
+      const res = await fetch(`https://pichulie-backend.onrender.com/tasks/edit/${taskId}`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -730,7 +730,7 @@ class TaskManager {
       
       if (token) {
         // Call the backend logout endpoint
-        const response = await fetch('http://localhost:3000/api/users/logout', {
+        const response = await fetch('https://pichulie-backend.onrender.com/api/users/logout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -772,7 +772,7 @@ class TaskManager {
 
   async getTaskById(taskId) {
     try {
-      const response = await fetch(`http://localhost:3000/api/task/get-task/${taskId}`, {
+      const response = await fetch(`https://pichulie-backend.onrender.com/api/task/get-task/${taskId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -7,7 +7,7 @@ document.getElementById("login").addEventListener("click",async function (e) {
 
     try {
         
-        let response = await fetch("http://localhost:3000/api/users/login", {
+        let response = await fetch("https://pichulie-backend.onrender.com/api/users/login", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"

@@ -79,7 +79,7 @@ async loadUserData() {
   }
 
   try {
-    const response = await fetch("http://localhost:3000/api/users/get-info", {
+    const response = await fetch("https://pichulie-backend.onrender.com/api/users/get-info", {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -325,7 +325,7 @@ async loadUserData() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch("http://localhost:3000/api/users/update", {
+      const response = await fetch("https://pichulie-backend.onrender.com/api/users/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

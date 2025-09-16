@@ -11,7 +11,7 @@ document.getElementById("register").addEventListener("click", async function (e)
 
     try {
         // Llamada al endpoint de registro
-        const response = await fetch("http://localhost:3000/api/users/register", {
+        const response = await fetch("https://pichulie-backend.onrender.com/api/users/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

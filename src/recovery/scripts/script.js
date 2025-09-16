@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("email").value;
   
       try {
-        const response = await fetch("http://localhost:3000/api/users/request-reset", {
+        const response = await fetch("https://pichulie-backend.onrender.com/api/users/request-reset", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
