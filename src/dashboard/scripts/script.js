@@ -1,3 +1,4 @@
+
 class TaskManager {
   constructor() {
     this.tasks = {
@@ -6,14 +7,7 @@ class TaskManager {
       "finished": [{ id: 3, title: "Do biology homework", time: "5:00 AM", reminder: false }],
     }
 
-    //this.currentDate = new Date()//.toISOString().split("T")[0];
-    const savedDate = localStorage.getItem("currentDate");
-    if (savedDate) {
-        this.currentDate = new Date(savedDate);
-    } else {
-        this.currentDate = new Date();
-        localStorage.setItem("currentDate", this.currentDate.toISOString());
-    }
+    this.currentDate = new Date()//.toISOString().split("T")[0];
     //this.day = new Date().toISOString().split("T")[0];
     this.init()
   }
@@ -88,8 +82,8 @@ class TaskManager {
     // Dropdown item actions
     const editProfileBtn = document.getElementById("editProfile")
     const logoutBtn = document.getElementById("logoutBtn")
-    if (editProfileBtn) editProfileBtn.addEventListener("click", () => this.editProfile())
-    if (logoutBtn) logoutBtn.addEventListener("click", () => this.performLogout())
+    if (editProfileBtn) editProfileBtn.addEventListener("click", () => alert("Editar perfil (accion placeholder)"))
+    if (logoutBtn) logoutBtn.addEventListener("click", () => alert("Cerrar Sesión (accion placeholder)"))
 
     // Close modal on overlay click
     document.querySelector(".modal-overlay").addEventListener("click", (e) => {
@@ -271,6 +265,9 @@ class TaskManager {
       alert("An error occurred while creating the task. Check the console for details.");
     }
   }
+  
+  
+  
   
 
 
@@ -507,7 +504,6 @@ class TaskManager {
 
   changeDate(direction) {
     this.currentDate.setDate(this.currentDate.getDate() + direction)
-    localStorage.setItem("currentDate", this.currentDate);//.toISOString());
     this.updateDateDisplay()
     this.updateHeaderDate()
     this.renderTasks(this.currentDate.toISOString().split("T")[0])
@@ -604,58 +600,7 @@ class TaskManager {
     console.log("Show trash functionality")
     // Lógica para mostrar la basura (Me falta)
   }
-
-  /**
-   * Performs user logout by calling backend endpoint and cleaning local storage
-   */
-  async performLogout() {
-    try {
-      // Get the stored token
-      const token = localStorage.getItem('token');
-      
-      if (token) {
-        // Call the backend logout endpoint
-        const response = await fetch('http://localhost:3000/api/users/logout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log(data.message);
-        } else {
-          console.warn('Logout endpoint failed, but proceeding with client-side logout');
-        }
-      }
-
-      // Clear localStorage regardless of backend response
-      localStorage.removeItem('token');
-      localStorage.removeItem('id');
-      
-      console.log('User logged out successfully');
-      
-      // Redirect to login page
-      window.location.href = '../../index.html';
-      
-    } catch (error) {
-      console.error('Error during logout:', error);
-      
-      // Even if there's an error, clear the session and redirect
-      localStorage.removeItem('token');
-      localStorage.removeItem('id');
-      window.location.href = '../../index.html';
-    }
-  }
-  async editProfile(){
-
-    window.location.href = '../profile/edit-profile.html';
-  
-  }
 }
-
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", () => {

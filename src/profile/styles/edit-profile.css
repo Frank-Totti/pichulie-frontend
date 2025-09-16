@@ -1,3 +1,8 @@
+/* Centrar el botón Continue del modal de éxito */
+.success-modal .btn-primary {
+  display: block;
+  margin: 24px auto 0 auto;
+}
 /* Edit Profile Styles */
 
 /* Header Styles */
