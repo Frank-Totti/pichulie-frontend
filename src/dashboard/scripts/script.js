@@ -1,13 +1,33 @@
-
 class TaskManager {
   constructor() {
     this.tasks = {
-      "to do": [{ id: 1, title: "Do math homework", time: "7:30 AM", reminder: true }],
-      "in process": [{ id: 2, title: "Do english homework", time: "10:30 AM", reminder: false }],
-      "finished": [{ id: 3, title: "Do biology homework", time: "5:00 AM", reminder: false }],
+      // Internamente trabajamos con las columnas del DOM: todo | inprocess | finished
+      todo: [{ id: 1, title: "Do math homework", time: "7:30 AM", reminder: true }],
+      inprocess: [{ id: 2, title: "Do english homework", time: "10:30 AM", reminder: false }],
+      finished: [{ id: 3, title: "Do biology homework", time: "5:00 AM", reminder: false }],
     }
 
-    this.currentDate = new Date()//.toISOString().split("T")[0];
+    // Mapear estados del backend <-> columnas del frontend
+    this.statusToColumn = {
+      "to do": "todo",
+      "in process": "inprocess",
+      "finished": "finished",
+    }
+
+    this.columnToStatus = {
+      todo: "to do",
+      inprocess: "in process",
+      finished: "finished",
+    }
+
+    //this.currentDate = new Date()//.toISOString().split("T")[0];
+    const savedDate = localStorage.getItem("currentDate");
+    if (savedDate) {
+        this.currentDate = new Date(savedDate);
+    } else {
+        this.currentDate = new Date();
+        localStorage.setItem("currentDate", this.currentDate.toISOString());
+    }
     //this.day = new Date().toISOString().split("T")[0];
     this.init()
   }
@@ -21,19 +41,14 @@ class TaskManager {
   }
 
   async todayButton(){
-
-    document.getElementById("today").addEventListener("click", async function (e) {
+    document.getElementById("today").addEventListener("click", async (e) => {
       e.preventDefault();
-
-
-
-        this.renderTasks(this.currentDate.toISOString().split("T")[0]);
-
-    }) 
-
+      this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+    })
   }
 
   bindEvents() {
+
     // Add task buttons
     document.querySelector(".add-task-btn").addEventListener("click", () => this.openModal())
     document.querySelector(".add-task-main").addEventListener("click", () => this.openModal())
@@ -82,7 +97,7 @@ class TaskManager {
     // Dropdown item actions
     const editProfileBtn = document.getElementById("editProfile")
     const logoutBtn = document.getElementById("logoutBtn")
-    if (editProfileBtn) editProfileBtn.addEventListener("click", () => alert("Editar perfil (accion placeholder)"))
+    if (editProfileBtn) editProfileBtn.addEventListener("click", () => this.editProfile())
     if (logoutBtn) logoutBtn.addEventListener("click", () => this.performLogout())
 
     // Close modal on overlay click
@@ -157,10 +172,10 @@ class TaskManager {
   
     // Validar status seleccionado
     const statusRadios = document.querySelectorAll('input[name="status"]');
-    let column = "to do"; // default
+    let status = "to do";
     for (const radio of statusRadios) {
       if (radio.checked) {
-        column = radio.value; // Debe ser exactamente "to do", "in process" o "finished"
+        status = radio.value;
         break;
       }
     }
@@ -186,30 +201,48 @@ class TaskManager {
       taskDateTime = this.currentDate.toISOString();
     }
   
-    // Preparar body asegurando formato correcto
-    const bodyData = {
-      title,
-      detail: description,
-      status: column,
-      task_date: taskDateTime
-    };
-  
-    console.log("Sending task to backend:", bodyData);
-    console.log("Token:", token);
-  
     try {
-      const response = await fetch("http://localhost:3000/api/task/new", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(bodyData)
-      });
+      let response;
+  
+      if (this.editingTask) {
+        // ESTAMOS EDITANDO
+        const taskId = this.editingTask.id;
+        const updatedTask = {
+          title,
+          detail: description,
+          remember: reminder,
+          status,
+          task_date: taskDateTime
+        };
+  
+        response = await fetch(`http://localhost:3000/api/task/edit/${taskId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedTask)
+        });
+      } else {
+        // CREANDO NUEVA TAREA
+        const bodyData = {
+          title,
+          detail: description,
+          status,
+          task_date: taskDateTime
+        };
+  
+        response = await fetch("http://localhost:3000/api/task/new", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(bodyData)
+        });
+      }
   
       console.log("Response status:", response.status);
-  
-      // Obtener siempre el texto crudo primero
       const rawText = await response.text();
       console.log("Raw response body:", rawText);
   
@@ -217,56 +250,20 @@ class TaskManager {
         throw new Error(`Server returned ${response.status}: ${rawText}`);
       }
   
-      // Intentar parsear JSON
-      let data;
-      try {
-        data = JSON.parse(rawText);
-      } catch (e) {
-        throw new Error("Backend did not return valid JSON: " + rawText);
-      }
+      const data = JSON.parse(rawText);
+      console.log(this.editingTask ? "Task updated successfully:" : "Task created successfully:", data);
   
-      console.log("Task created successfully:", data);
+      alert(this.editingTask ? "Task updated successfully!" : "Task created successfully!");
   
-      // Reset form
-      //document.getElementById("taskModal").reset();
-  
-      alert("Task created successfully!");
-  
-      // Actualizar lista de tareas localmente
-      if (this.editingTask) {
-        const task = this.tasks[this.editingTask.column].find(t => t.id === this.editingTask.id);
-        if (task) {
-          task.title = title;
-          task.time = time ? this.formatTime(time) : "";
-          task.description = description;
-          task.reminder = reminder;
-  
-          if (this.editingTask.column !== column) {
-            this.moveTask(this.editingTask.id, this.editingTask.column, column);
-          }
-        }
-        this.editingTask = null;
-      } else {
-        const newTask = {
-          id: Date.now(),
-          title,
-          time: time ? this.formatTime(time) : "",
-          description,
-          reminder,
-        };
-        this.tasks[column].push(newTask);
-      }
-  
-      this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+      this.editingTask = null;
+      await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
       this.closeModal();
   
     } catch (error) {
-      console.error("Error creating the task:", error);
-      alert("An error occurred while creating the task. Check the console for details.");
+      console.error("Error saving the task:", error);
+      alert("An error occurred while saving the task. Check the console for details.");
     }
   }
-  
-  
   
   
 
@@ -312,10 +309,14 @@ class TaskManager {
         // Agrupar y renderizar tareas como antes
         const tasksByColumn = { todo: [], inprocess: [], finished: [] };
         tasksArray.forEach(task => {
-            if (task.status === "to do") tasksByColumn.todo.push(task);
-            else if (task.status === "in process") tasksByColumn.inprocess.push(task);
-            else if (task.status === "finished") tasksByColumn.finished.push(task);
+            const column = this.statusToColumn[task.status];
+            if (column) {
+              tasksByColumn[column].push(task);
+            }
         });
+
+        // Mantener this.tasks sincronizado con backend
+        this.tasks = tasksByColumn;
 
         Object.keys(tasksByColumn).forEach(column => {
             const taskList = document.querySelector(`[data-column="${column}"]`);
@@ -336,7 +337,8 @@ class TaskManager {
   createTaskCard(task, column) {
     const card = document.createElement("div")
     card.className = "task-card"
-    card.dataset.taskId = task.id
+    // Usar _id si viene de Mongo, o id local como fallback
+    card.dataset.taskId = task._id || task.id
     card.dataset.column = column
 
     card.innerHTML = `
@@ -394,7 +396,8 @@ class TaskManager {
 
   handleContextMenuAction(e) {
     const action = e.target.dataset.action
-    const taskId = Number.parseInt(e.target.dataset.taskId)
+    // Usar el id tal cual (Mongo _id es string)
+    const taskId = e.target.dataset.taskId
     const column = e.target.dataset.column
 
     this.hideContextMenu()
@@ -406,35 +409,150 @@ class TaskManager {
     }
   }
 
+  async saveEditedTask() {
+    if (!this.editingTask) return;
+  
+    const taskId = this.editingTask.id;
+  
+    // Tomamos valores del modal
+    const titleEl = document.getElementById("taskTitle");
+    const descEl  = document.getElementById("taskDescription");
+    const timeEl  = document.getElementById("taskTime");
+    const remEl   = document.getElementById("taskReminder");
+    const stTodo  = document.getElementById("statusTodo");
+    const stIn    = document.getElementById("statusInProcess");
+    const stFin   = document.getElementById("statusFinished");
+  
+    // Formamos la fecha final (ejemplo: usar hoy + hora seleccionada)
+    let finalDate = null;
+    if (timeEl?.value) {
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      finalDate = new Date(`${today}T${timeEl.value}:00.000Z`);
+    }
+  
+    const updatedTask = {
+      title: titleEl?.value || "",
+      detail: descEl?.value || "",
+      task_date: finalDate, 
+      remember: remEl?.checked || false,
+      status: stTodo?.checked ? "to do" : stIn?.checked ? "in process" : "finished"
+    };
+  
+    try {
+      const token = localStorage.getItem("token"); // ⚡ importante: JWT
+      const res = await fetch(`http://localhost:3000/tasks/edit/${taskId}`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedTask)
+      });
+  
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Error al actualizar la tarea");
+      }
+  
+      console.log("Tarea actualizada:", data);
+  
+      this.closeModal();
+      this.loadTasks();
+  
+    } catch (err) {
+      console.error("Error al editar tarea:", err);
+      alert(err.message || "No se pudo guardar la tarea");
+    }
+  }
+
+  async editTask(taskId, column) {
+    try {
+      // Traemos la tarea desde el backend
+      const task = await this.getTaskById(taskId);
+      if (!task) return;
+  
+      // Rellenar modal con los datos traídos del backend
+      const titleEl = document.getElementById("taskTitle");
+      const descEl  = document.getElementById("taskDescription");
+      const timeEl  = document.getElementById("taskTime");
+      const remEl   = document.getElementById("taskReminder");
+      const stTodo  = document.getElementById("statusTodo");
+      const stIn    = document.getElementById("statusInProcess");
+      const stFin   = document.getElementById("statusFinished");
+  
+      if (titleEl) titleEl.value = task.title || "";
+      if (descEl)  descEl.value = task.detail || task.description || "";
+      if (remEl)   remEl.checked = !!task.remember;
+  
+      // time input en formato HH:MM si existe task_date
+      if (timeEl && task.task_date) {
+        const d = new Date(task.task_date);
+        timeEl.value = d.toTimeString().slice(0, 5); // "HH:MM"
+      } else if (timeEl) {
+        timeEl.value = "12:00";
+      }
+  
+      // Seleccionar radio según estado
+      if (stTodo) stTodo.checked = (task.status === "to do");
+      if (stIn)   stIn.checked   = (task.status === "in process");
+      if (stFin)  stFin.checked  = (task.status === "finished");
+  
+      // Guardamos info de edición y abrimos modal en modo edición
+      this.editingTask = { id: taskId, column: this.statusToColumn[task.status] || column || "todo" };
+      this.openModal(true);
+  
+    } catch (err) {
+      console.error("Error al cargar tarea:", err);
+      alert("No se pudo cargar la tarea. Mira la consola para más detalles.");
+    }
+  }
+  
+/*
   editTask(taskId, column) {
-    const task = this.tasks[column].find((t) => t.id === taskId)
+    const task = this.tasks[column].find((t) => (t._id || t.id) === taskId)
     if (!task) return
 
     // Pre-fill modal with task data
-    document.getElementById("taskTitle").value = task.title
-    document.getElementById("taskTime").value = task.time ? this.convertTo24Hour(task.time) : "12:00"
-    document.getElementById("taskDate").value = new Date().toISOString().split("T")[0]
-    document.getElementById("taskDescription").value = task.description || ""
+
+    const titleEl = document.getElementById("taskTitle");
+    if (titleEl) titleEl.value = task.title || ""
+    const timeEl = document.getElementById("taskTime");
+    if (timeEl) {
+      if (task.time && typeof task.time === 'string' && task.time.includes(' ')) {
+        timeEl.value = this.convertTo24Hour(task.time)
+      } else if (task.time && typeof task.time === 'string' && task.time.includes(':')) {
+        timeEl.value = task.time
+      } else {
+        timeEl.value = "12:00"
+      }
+    }
+    const descEl = document.getElementById("taskDescription");
+    if (descEl) descEl.value = task.description || ""
 
     // Set status radio button
-    if (column === "to do") {
-      document.getElementById("statusTodo").checked = true
-    } else if (column === "in process") {
-      document.getElementById("statusInProcess").checked = true
-    } else if (column === "finished") {
-      document.getElementById("statusFinished").checked = true
-    }
+    const status = this.columnToStatus[column]
+    const stTodo = document.getElementById("statusTodo")
+    const stIn = document.getElementById("statusInProcess")
+    const stFin = document.getElementById("statusFinished")
+    if (stTodo) stTodo.checked = false
+    if (stIn) stIn.checked = false
+    if (stFin) stFin.checked = false
+    if (status === 'to do' && stTodo) stTodo.checked = true
+    if (status === 'in process' && stIn) stIn.checked = true
+    if (status === 'finished' && stFin) stFin.checked = true
 
     // Set reminder checkbox
-    document.getElementById("taskReminder").checked = task.reminder || false
+    const remEl = document.getElementById("taskReminder");
+    if (remEl) remEl.checked = task.reminder || false
 
     // Store editing task info
     this.editingTask = { id: taskId, column: column }
 
     // Open modal in edit mode
     this.openModal(true)
-  }
 
+  }
+*/
   convertTo24Hour(time12) {
     if (!time12) return "12:00"
     const [time, modifier] = time12.split(" ")
@@ -449,7 +567,7 @@ class TaskManager {
   }
 
   deleteTaskWithConfirmation(taskId, column) {
-    const task = this.tasks[column].find((t) => t.id === taskId)
+    const task = this.tasks[column].find((t) => (t._id || t.id) === taskId)
     if (!task) return
 
     this.showDeleteModal(task, taskId, column)
@@ -486,7 +604,7 @@ class TaskManager {
   moveTask(taskId, fromColumn, toColumn) {
     if (fromColumn === toColumn) return
 
-    const taskIndex = this.tasks[fromColumn].findIndex((task) => task.id === taskId)
+    const taskIndex = this.tasks[fromColumn].findIndex((task) => (task._id || task.id) === taskId)
     if (taskIndex === -1) return
 
     const task = this.tasks[fromColumn].splice(taskIndex, 1)[0]
@@ -495,7 +613,7 @@ class TaskManager {
   }
 
   deleteTask(taskId, column) {
-    const taskIndex = this.tasks[column].findIndex((task) => task.id === taskId)
+    const taskIndex = this.tasks[column].findIndex((task) => (task._id || task.id) === taskId)
     if (taskIndex !== -1) {
       this.tasks[column].splice(taskIndex, 1)
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
@@ -504,6 +622,7 @@ class TaskManager {
 
   changeDate(direction) {
     this.currentDate.setDate(this.currentDate.getDate() + direction)
+    localStorage.setItem("currentDate", this.currentDate);//.toISOString());
     this.updateDateDisplay()
     this.updateHeaderDate()
     this.renderTasks(this.currentDate.toISOString().split("T")[0])
@@ -645,7 +764,48 @@ class TaskManager {
       window.location.href = '../../index.html';
     }
   }
+  async editProfile(){
+
+    window.location.href = '../profile/edit-profile.html';
+  
+  }
+
+  async getTaskById(taskId) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/task/get-task/${taskId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}` // si usas JWT
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al obtener la tarea: ${response.status}`);
+      }
+
+      const task = await response.json();
+      console.log("Tarea obtenida:", task);
+
+      // Aquí puedes actualizar el DOM con los datos de la tarea
+      // Ejemplo:
+      const taskDetail = document.getElementById("taskDetail");
+      if (taskDetail) {
+        taskDetail.innerHTML = `
+          <h2>${task.title}</h2>
+          <p>${task.detail}</p>
+          <p><strong>Estado:</strong> ${task.status}</p>
+          <p><strong>Fecha:</strong> ${new Date(task.task_date).toLocaleString()}</p>
+        `;
+      }
+
+      return task;
+    } catch (error) {
+      console.error("Error en getTaskById:", error);
+    }
+  }
 }
+
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", () => {
