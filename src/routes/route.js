@@ -29,7 +29,8 @@ async function loadView(name) {
   app.innerHTML = html;
   console.log("Vista inyectada en #principal-app");
 
-  loadCSS(`/src/styles/${name}_styles.css`);
+  //loadCSS(`/src/styles/${name}_styles.css`);
+  loadCSS(`${name}_styles.css`);
 
   if (name === 'login') initLogin();
   if (name === 'dashboard') initDashboard();
@@ -41,6 +42,17 @@ async function loadView(name) {
   if  (name === 'register') initRegister();
 }
 
+function loadCSS(file) {
+  const url = new URL(`../styles/${file}`, import.meta.url).href;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = url;
+  link.dataset.viewStyle = true;
+  document.head.appendChild(link);
+}
+
+/*
 function loadCSS(href) {
   // Elimina si ya existe
   document.querySelectorAll(`link[data-view-style]`).forEach(el => el.remove());
@@ -51,6 +63,8 @@ function loadCSS(href) {
   link.dataset.viewStyle = true;
   document.head.appendChild(link);
 }
+
+*/
 
 /**
  * Initialize the hash-based router.
