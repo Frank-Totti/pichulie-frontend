@@ -1,0 +1,111 @@
+@import './about_us_styles.css';
+
+/* Sitemap View Styles */
+
+.sitemap-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    padding: 30px;
+    background: linear-gradient(135deg, #FFF5F5 0%, #F5F0F0 100%);
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    flex: 1;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.sitemap-section {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sitemap-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.sitemap-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c2c2c;
+    margin: 0;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #F5F0F0;
+    position: relative;
+}
+
+.sitemap-title::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+    border-radius: 2px;
+}
+
+.sitemap-content {
+    flex: 1;
+}
+
+.sitemap-list {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.sitemap-list li {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #4a4a4a;
+    margin-bottom: 12px;
+    padding-left: 25px;
+    position: relative;
+}
+
+.sitemap-list li::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: #ff6b6b;
+    font-size: 12px;
+    top: 2px;
+}
+
+.sitemap-list a {
+    color: #2c2c2c;
+    text-decoration: none;
+}
+
+.sitemap-list a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sitemap-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+  .sitemap-section { padding: 20px; }
+  .sitemap-title { font-size: 18px; }
+  .sitemap-list li { font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+  .sitemap-container { padding: 15px; gap: 15px; }
+  .sitemap-section { padding: 15px; }
+  .sitemap-title { font-size: 16px; }
+  .sitemap-list li { font-size: 13px; }
+}
+
+
