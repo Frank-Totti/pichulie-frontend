@@ -31,12 +31,6 @@ async function loadView(name) {
 
   loadCSS(`/src/styles/${name}_styles.css`);
 
-  if (name === 'about_us') {
-    await import('../scripts/about_us.controller.js')
-      .then(module => module.initAboutPage())
-      .catch(err => console.error('Error loading about page:', err));
-  }
-
   if (name === 'login') initLogin();
   if (name === 'dashboard') initDashboard();
   if (name === 'about_us') initAboutUs();
@@ -129,13 +123,17 @@ function initRegister(){
   }
 
 function initAboutUs(){
-  document.getElementById("today-button").addEventListener("click",async function () {
+  // First initialize the page
+  import('../scripts/about_us.controller.js')
+    .then(module => module.initAboutPage())
+    .catch(err => console.error('Error loading about page:', err));
 
+  // Then set up the today button click handler
+  document.getElementById("today-button")?.addEventListener("click", () => {
     console.log("Today button clicked");
-    localStorage.setItem("currentDate",new Date());
+    localStorage.setItem("currentDate", new Date().toISOString());
     location.hash = '#/dashboard';
-    
-})
+  });
 }
 
 function initSitemap(){
