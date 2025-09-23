@@ -1,0 +1,235 @@
+<header class="topbar">
+    <div class="topbar-inner">
+        <div class="brand">
+            <div class="brand-icon">☑</div>
+            <div class="brand-name">Pichulie</div>
+        </div>
+        <div class="topbar-right">
+            <button class="menu-icon" aria-label="Open menu">☰</button>
+
+            <div class="profile-circle" id="headerProfile" title="Juan Francesco">JF</div>
+
+            <div class="header-dropdown" id="headerDropdown" aria-hidden="true">
+                <button class="drop-item" id="editProfile">Edit Profile</button>
+                <button class="drop-item" id="logoutBtn">Log out</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Navigation Menu -->
+        <nav class="nav-menu">
+            <button class="nav-item add-task-btn">
+                <div class="nav-icon add-icon">+</div>
+                <span>Add task</span>
+            </button>
+
+            <button class="nav-item">
+                <div class="nav-icon search-icon">🔍</div>
+                <span>Search by date</span>
+            </button>
+
+            <button id="today" type="button" class="nav-item active">
+                <div class="nav-icon today-icon">📅</div>
+                <span>Today</span>
+            </button>
+<!--
+            Sección eliminada por ahora en este sprint
+            <button class="nav-item">
+                <div class="nav-icon calendar-icon">📋</div>
+                    <span>
+                        <a href="../calendar/calendar.html">see all task</a> 
+                    </span>
+            </button>
+-->
+            <button class="nav-item">
+                <div class="nav-icon trash-icon">🗑️</div>
+                <span>Trash</span>
+            </button>
+
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="date-title">Wednesday - Today</h1>
+        </header>
+
+        <!-- Task Columns -->
+        <div class="task-board">
+            <!-- To Do Column -->
+            <div class="task-column">
+                <h2 class="column-title">To do</h2>
+                <div class="task-list" data-column="todo">
+                    <div class="task-card">
+                        <div class="task-header">
+                            <h3 class="task-title">Do math homework</h3>
+                            <button class="task-menu">☰</button>
+                        </div>
+                        <div class="task-meta">
+                            <span class="task-reminder">Remember</span>
+                            <span class="task-time">7:30 AM</span>
+                            <span class="task-check">☑</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In Process Column -->
+            <div class="task-column">
+                <h2 class="column-title">In process</h2>
+                <div class="task-list" data-column="inprocess">
+                    <div class="task-card">
+                        <div class="task-header">
+                            <h3 class="task-title">Do english homework</h3>
+                            <button class="task-menu">☰</button>
+                        </div>
+                        <div class="task-meta">
+                            <span class="task-time">10:30 AM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finished Column -->
+            <div class="task-column">
+                <h2 class="column-title">Finished</h2>
+                <div class="task-list" data-column="finished">
+                    <div class="task-card">
+                        <div class="task-header">
+                            <h3 class="task-title">Do biology homework</h3>
+                            <button class="task-menu">☰</button>
+                        </div>
+                        <div class="task-meta">
+                            <span class="task-time">5:00 AM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Button -->
+        <button class="add-task-main">
+            <span class="add-task-icon">+</span>
+            <span>Add Task</span>
+        </button>
+
+        <!-- Date Navigator -->
+        <div class="date-navigator">
+            <button class="nav-arrow prev">‹</button>
+            <div class="date-display">
+                <div id="month_id" class="month"></div>
+                <div id="year_id" class="year"></div>
+                <div id="day_id" class="day"></div>
+            </div>
+            <button class="nav-arrow next">›</button>
+        </div>
+    </main>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="taskModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitle">Create Task</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="taskTitle">Title:</label>
+                    <input type="text" id="taskTitle" class="task-input">
+                </div>
+
+                <div class="form-group date-time-group">
+                    
+
+
+                    <div>
+                        <label for="taskTime">Hour:</label>
+                        <div class="time-input-container">
+                            <input type="time" id="taskTime" class="task-input time-input">
+                            <span class="time-icon"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="taskDescription">Description (optional):</label>
+                <textarea id="taskDescription" class="task-input task-textarea"></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Status:</label>
+                    <div class="status-options">
+                        <div class="status-option">
+                            <input type="radio" id="statusTodo" name="status" value="to do" checked>
+                            <label for="statusTodo">To do</label>
+                        </div>
+                        <div class="status-option">
+                            <input type="radio" id="statusInProcess" name="status" value="in process">
+                            <label for="statusInProcess">In Process</label>
+                        </div>
+                        <div class="status-option">
+                            <input type="radio" id="statusFinished" name="status" value="finished">
+                            <label for="statusFinished">Finished</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Remember:</label>
+                    <div class="remember-toggle">
+                        <input type="checkbox" id="taskReminder" class="remember-checkbox">
+                        <label for="taskReminder" class="remember-icon">✓</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">CANCEL</button>
+            <button class="btn-save" id="taskActionBtn">CREATE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal delete-modal">
+        <div class="modal-header">
+            <h3>Are you sure you want to delete this task?</h3>
+        </div>
+        <div class="modal-body">
+            <div class="delete-task-info">
+                <h4 id="deleteTaskTitle">Task Title</h4>
+                <div class="delete-task-description">
+                    <label>Description:</label>
+                    <div id="deleteTaskDescription" class="description-box">
+                        Task description will appear here
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" id="cancelDelete">CANCEL</button>
+            <button class="btn-delete" id="confirmDelete">DELETE</button>
+        </div>
+    </div>
+</div>
+
+<!-- Footer similar to mockup -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-left">
+            <a href="#/about_us">Sobre nosotros</a>
+        </div>
+        <div class="footer-center">tel. 3991674532 &nbsp;&nbsp; fijo. 11323243435</div>
+        <div class="footer-right">pichulie@pichulie.com &nbsp;&nbsp; Dir. Kra 119C #55A - 556</div>
+    </div>
+</footer>

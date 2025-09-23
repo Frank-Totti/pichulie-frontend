@@ -1,0 +1,205 @@
+<header class="topbar">
+    <div class="topbar-inner">
+        <div class="brand">
+            <div class="brand-icon">☑</div>
+            <div class="brand-name">Pichulie</div>
+        </div>
+        <div class="topbar-right">
+            <button class="menu-icon" aria-label="Open menu">☰</button>
+
+            <div class="profile-circle" id="headerProfile" title="Juan Francesco">JF</div>
+
+            <div class="header-dropdown" id="headerDropdown" aria-hidden="true">
+                <button class="drop-item" id="editProfile">Edit Profile</button>
+                <button class="drop-item" id="logoutBtn">Log out</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Navigation Menu -->
+        <nav class="nav-menu">
+            <button class="nav-item add-task-btn">
+                <div class="nav-icon add-icon">+</div>
+                <span>Add task</span>
+            </button>
+
+            <button class="nav-item">
+                <div class="nav-icon search-icon">🔍</div>
+                <span>Search by date</span>
+            </button>
+
+            <button class="nav-item active">
+                <div class="nav-icon today-icon">📅</div>
+                <span>Today</span>
+            </button>
+<!--
+            Sección eliminada por ahora en este sprint
+            <button class="nav-item">
+                <div class="nav-icon calendar-icon">📋</div>
+                    <span>
+                        <a href="../calendar/calendar.html">see all task</a> 
+                    </span>
+            </button>
+-->          
+
+            <button class="nav-item">
+                <div class="nav-icon trash-icon">🗑️</div>
+                <span>Trash</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Edit Profile View -->
+        <div id="editProfileView" class="content-view active">
+            <header class="header">
+                <div class="header-left">
+                    <a href="../dashboard/dashboard.html" class="back-link">
+                        <span class="back-arrow">←</span>
+                        <span>Back to Dashboard</span>
+                    </a>
+                </div>
+                <h1 class="page-title">Edit Profile</h1>
+            </header>
+            
+            <div class="edit-profile-container">
+                <div class="profile-card">
+                    <!-- Avatar Section -->
+                    <div class="avatar-section">
+                        <div class="avatar-container">
+                            <div class="avatar-preview">
+                                <img id="avatarPreview" src="/public/logo.png" alt="Profile Avatar">
+                                <div class="avatar-overlay">
+                                    <span class="camera-icon">📷</span>
+                                </div>
+                            </div>
+                            <button type="button" class="change-avatar-btn" id="changeAvatarBtn">
+                                Change Avatar
+                            </button>
+                            <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <form class="profile-form" id="profileForm">
+                        <div class="form-group">
+                            <label for="userName" class="form-label">Full Name</label>
+                            <input 
+                                type="text" 
+                                id="userName" 
+                                name="name" 
+                                class="form-input"
+                                required
+                                minlength="2"
+                                maxlength="100"
+                            >
+                            <div class="input-hint">Enter your full name (2-100 characters)</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userEmail" class="form-label">Email Address</label>
+                            <input 
+                                type="email" 
+                                id="userEmail" 
+                                name="email" 
+                                class="form-input"
+                                required
+                            >
+                            <div class="input-hint">Your email address for login and notifications</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userAge" class="form-label">Age</label>
+                            <input 
+                                type="number" 
+                                id="userAge" 
+                                name="age" 
+                                class="form-input"
+                                required
+                                min="13"
+                                max="122"
+                            >
+                            <div class="input-hint">Must be between 13 and 122 years old</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userPassword" class="form-label">Password</label>
+                            <div class="password-input-container">
+                                <input 
+                                    type="password" 
+                                    id="userPassword" 
+                                    name="password" 
+                                    class="form-input password-input" 
+                                    placeholder="Enter new password"
+                                    minlength="8"
+                                >
+                                <button type="button" class="password-toggle" id="passwordToggle">
+                                    <span class="eye-icon">👁️</span>
+                                </button>
+                            </div>
+                            <div class="input-hint">
+                                Password must be at least 8 characters with uppercase, lowercase, and number
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <div class="password-input-container">
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    name="confirmPassword" 
+                                    class="form-input password-input" 
+                                    placeholder="Confirm new password"
+                                    minlength="8"
+                                >
+                                <button type="button" class="password-toggle" id="confirmPasswordToggle">
+                                    <span class="eye-icon">👁️</span>
+                                </button>
+                            </div>
+                            <div class="input-hint">Re-enter your password to confirm</div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancelBtn">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="saveBtn">
+                                <span class="btn-text">Save Changes</span>
+                                <span class="btn-loading" style="display: none;">Saving...</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content success-modal">
+        <div class="modal-icon"></div>
+        <h3 class="modal-title">Profile Updated Successfully!</h3>
+        <p class="modal-message">Your profile has been updated with the new information.</p>
+        <button class="btn btn-primary" id="closeSuccessModal">Continue</button>
+    </div>
+</div>
+
+<!-- Footer similar to mockup -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-left">
+            <a href="../aboutUs/about.html">Sobre nosotros</a>
+        </div>
+        <div class="footer-center">tel. 3991674532 &nbsp;&nbsp; fijo. 11323243435</div>
+        <div class="footer-right">pichulie@pichulie.com &nbsp;&nbsp; Dir. Kra 119C #55A - 556</div>
+    </div>
+</footer>
+</body>
