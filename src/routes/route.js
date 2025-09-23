@@ -40,6 +40,7 @@ async function loadView(name) {
   if (name === 'login') initLogin();
   if (name === 'dashboard') initDashboard();
   if (name === 'about_us') initAboutUs();
+  if (name === 'sitemap') initSitemap();
   if (name === 'edit_profile') initializeEditProfile();
   if (name === 'new_password') initNewPassword();
   if (name === 'recovery') initRecover();
@@ -76,6 +77,7 @@ function handleRoute() {
     'login',
     'dashboard',
     'about_us',
+    'sitemap',
     'edit_profile',
     'new_password',
     'recovery',
@@ -134,6 +136,10 @@ function initAboutUs(){
     location.hash = '#/dashboard';
     
 })
+}
+
+function initSitemap(){
+  // No-op for now; sitemap is static. Hook available for future interactions.
 }
 
 function initRecover(){
