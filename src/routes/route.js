@@ -34,7 +34,7 @@ async function loadView(name) {
   if (name === 'login') initLogin();
   if (name === 'dashboard') initDashboard();
   if (name === 'about_us') initAboutUs();
-  if (name === 'sitemap') initSitemap();
+  if (name === 'sitemap') initSiteMap();
   if (name === 'edit_profile') initializeEditProfile();
   if (name === 'new_password') initNewPassword();
   if (name === 'recovery') initRecover();
@@ -136,8 +136,10 @@ function initAboutUs(){
   });
 }
 
-function initSitemap(){
-  // No-op for now; sitemap is static. Hook available for future interactions.
+function initSiteMap(){
+  import('../scripts/sitemap.controller.js')
+    .then(module => module.initSiteMap())
+    .catch(err => console.error('Error loading about page:', err));
 }
 
 function initRecover(){
