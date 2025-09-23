@@ -1,6 +1,6 @@
 import { logOutUser } from '../services/userServices.js';
 import { createTask, updateTask, TaskByDate, TaskById } from '../services/taskServices.js';
-
+const API_PORT = import.meta.env.VITE_API_URL;
 
 class TaskManager {
     constructor() {
@@ -550,15 +550,14 @@ class TaskManager {
       const deleteModal = document.getElementById("deleteModal")
       const taskTitle = document.getElementById("deleteTaskTitle")
       const taskDescription = document.getElementById("deleteTaskDescription")
-  
+
       taskTitle.textContent = task.title
       taskDescription.textContent =
-        task.description ||
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non."
-  
-      
+        task.detail ||
+        "No description."
+    
       this.taskToDelete = { id: taskId, column: column }
-  
+      
       deleteModal.classList.add("active")
     }
   
@@ -585,13 +584,42 @@ class TaskManager {
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
     }
   
-    deleteTask(taskId, column) {
-      const taskIndex = this.tasks[column].findIndex((task) => (task._id || task.id) === taskId)
-      if (taskIndex !== -1) {
-        this.tasks[column].splice(taskIndex, 1)
-        this.renderTasks(this.currentDate.toISOString().split("T")[0])
-      }
+    async deleteTask(taskId, column) {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("Authentication required");
+        }
+
+        // Call API to delete task
+        const response = await fetch(`${API_PORT}/api/task/delete/${taskId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+
+        // Remove from local state
+        const taskIndex = this.tasks[column].findIndex((task) => (task._id || task.id) === taskId);
+        if (taskIndex !== -1) {
+            this.tasks[column].splice(taskIndex, 1);
+            // Re-render tasks to update UI
+            await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+        }
+
+        alert('Task deleted successfully');
+
+    } catch (error) {
+        console.error("Error deleting task:", error);
+        alert("Error deleting task: " + error.message);
     }
+  }
   
     changeDate(direction) {
       this.currentDate.setDate(this.currentDate.getDate() + direction)
