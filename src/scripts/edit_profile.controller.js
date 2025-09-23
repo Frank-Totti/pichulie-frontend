@@ -1,11 +1,13 @@
 
 import { getInfoUser, updateUser } from '../services/userServices.js';
+const API_PORT = import.meta.env.VITE_API_URL;
 
 export class EditProfileController {
     constructor() {
       this.form = null
       this.avatarInput = null
       this.avatarPreview = null
+      this.selectedAvatarFile = null;
       this.passwordToggle = null
       this.confirmPasswordToggle = null
       this.isPasswordVisible = false
@@ -23,6 +25,8 @@ export class EditProfileController {
       this.form = document.getElementById('profileForm')
       this.avatarInput = document.getElementById('avatarInput')
       this.avatarPreview = document.getElementById('avatarPreview')
+      this.avatarContainer = document.querySelector('.avatar-preview');
+      this.avatarContainer.addEventListener('click', () => this.triggerAvatarUpload());
       this.passwordToggle = document.getElementById('passwordToggle')
       this.confirmPasswordToggle = document.getElementById('confirmPasswordToggle')
     }
@@ -32,13 +36,17 @@ export class EditProfileController {
         this.form.addEventListener('submit', (e) => this.handleFormSubmit(e))
       }
   
-      const changeAvatarBtn = document.getElementById('changeAvatarBtn')
+      const changeAvatarBtn = document.getElementById('changeAvatarBtn');
       if (changeAvatarBtn) {
-        changeAvatarBtn.addEventListener('click', () => this.triggerAvatarUpload())
+        changeAvatarBtn.addEventListener('click', () => this.uploadAvatar());
       }
-  
+
+      if (this.avatarPreview) {
+        this.avatarPreview.addEventListener('click', () => this.triggerAvatarUpload());
+      }
+
       if (this.avatarInput) {
-        this.avatarInput.addEventListener('change', (e) => this.handleAvatarChange(e))
+        this.avatarInput.addEventListener('change', (e) => this.handleAvatarChange(e));
       }
   
       if (this.passwordToggle) {
@@ -122,29 +130,45 @@ export class EditProfileController {
     }
   
     triggerAvatarUpload() {
-      if (this.avatarInput) this.avatarInput.click()
+      this.avatarInput?.click();
     }
   
-    handleAvatarChange(event) {
-      const file = event.target.files[0]
-      if (file) {
-        if (!file.type.startsWith('image/')) {
-          showAlert('Please select a valid image file', 'error', 'dashboard')
-          return
-        }
-  
-        if (file.size > 5 * 1024 * 1024) {
-          showAlert('Image size must be less than 5MB', 'error', 'dashboard')
-          return
-        }
-  
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          if (this.avatarPreview) this.avatarPreview.src = e.target.result
-        }
-        reader.readAsDataURL(file)
-      }
+    handleAvatarChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    this.selectedAvatarFile = file;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = document.getElementById('avatarPreview');
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async uploadAvatar() {
+    if (!this.selectedAvatarFile) {
+      alert('Select an image first');
+      return;
     }
+
+    const formData = new FormData();
+    formData.append('profilePicture', this.selectedAvatarFile);
+
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_PORT}/api/users/upload-pfp`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      console.error(await res.text());
+      alert('Error subiendo imagen');
+      return;
+    }
+    alert('¡Avatar subido!');
+  }
   
     togglePasswordVisibility() {
       const passwordInput = document.getElementById('userPassword')
