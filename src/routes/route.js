@@ -31,6 +31,12 @@ async function loadView(name) {
 
   loadCSS(`/src/styles/${name}_styles.css`);
 
+  if (name === 'about_us') {
+    await import('../scripts/about_us.controller.js')
+      .then(module => module.initAboutPage())
+      .catch(err => console.error('Error loading about page:', err));
+  }
+
   if (name === 'login') initLogin();
   if (name === 'dashboard') initDashboard();
   if (name === 'about_us') initAboutUs();
