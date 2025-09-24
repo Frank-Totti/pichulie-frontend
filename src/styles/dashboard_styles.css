@@ -515,7 +515,7 @@
   
   .task-column {
     background: white;
-    border: 1px solid #e6e6e6;
+    border: 1px solid #cacaca;
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -526,6 +526,7 @@
     flex-direction: column;
     height: 100%;
     box-shadow: 0 8px 22px rgba(17,24,39,0.04);
+    max-height: 300px;
   }
   
   .column-title {
@@ -546,7 +547,7 @@
   
   .task-card {
     background: #ffffff;
-    border: 1px solid #eee;
+    border: 1px solid #c6c6c6;
     border-radius: 10px;
     padding: 14px 16px;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
