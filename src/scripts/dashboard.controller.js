@@ -1,6 +1,6 @@
 import { logOutUser } from '../services/userServices.js';
 import { createTask, updateTask, TaskByDate, TaskById } from '../services/taskServices.js';
-
+const API_PORT = import.meta.env.VITE_API_URL;
 
 class TaskManager {
     constructor() {
@@ -33,7 +33,9 @@ class TaskManager {
           localStorage.setItem("currentDate", this.currentDate.toISOString());
       }
       //this.day = new Date().toISOString().split("T")[0];
-      this.init()
+        this.init();
+        this.initializeHeaderButtons();
+        this.updateUserDisplay();
     }
   
     init() {
@@ -595,15 +597,14 @@ class TaskManager {
       const deleteModal = document.getElementById("deleteModal")
       const taskTitle = document.getElementById("deleteTaskTitle")
       const taskDescription = document.getElementById("deleteTaskDescription")
-  
+
       taskTitle.textContent = task.title
       taskDescription.textContent =
-        task.description ||
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nisl tincidunt eget nullam non."
-  
-      
+        task.detail ||
+        "No description."
+    
       this.taskToDelete = { id: taskId, column: column }
-  
+      
       deleteModal.classList.add("active")
     }
   
@@ -630,13 +631,42 @@ class TaskManager {
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
     }
   
-    deleteTask(taskId, column) {
-      const taskIndex = this.tasks[column].findIndex((task) => (task._id || task.id) === taskId)
-      if (taskIndex !== -1) {
-        this.tasks[column].splice(taskIndex, 1)
-        this.renderTasks(this.currentDate.toISOString().split("T")[0])
-      }
+    async deleteTask(taskId, column) {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("Authentication required");
+        }
+
+        // Call API to delete task
+        const response = await fetch(`${API_PORT}/api/task/delete/${taskId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
+
+        // Remove from local state
+        const taskIndex = this.tasks[column].findIndex((task) => (task._id || task.id) === taskId);
+        if (taskIndex !== -1) {
+            this.tasks[column].splice(taskIndex, 1);
+            // Re-render tasks to update UI
+            await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+        }
+
+        alert('Task deleted successfully');
+
+    } catch (error) {
+        console.error("Error deleting task:", error);
+        alert("Error deleting task: " + error.message);
     }
+  }
   
     changeDate(direction) {
       this.currentDate.setDate(this.currentDate.getDate() + direction)
@@ -737,45 +767,108 @@ class TaskManager {
       console.log("Show trash functionality")
       // Lógica para mostrar la basura (Me falta)
     }
-  
+  getTokenFromStorage() {
+        return localStorage.getItem('token') || 
+                localStorage.getItem('authToken') || 
+                localStorage.getItem('jwt') ||
+                sessionStorage.getItem('token');
+    }
+
+    async updateUserDisplay() {
+        const token = this.getTokenFromStorage();
+        if (!token) return;
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/get-info`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch user details');
+
+            const userData = await response.json();
+            
+            const userName = document.getElementById('userName');
+            const userAvatar = document.getElementById('userAvatar');
+
+            const profilePicture = userData.profile_picture;
+            
+            if (userName) userName.textContent = userData.name || 'User';
+            if (profilePicture && profilePicture !== 'default-avatar.png' && profilePicture !== null) {
+                const profileImg = document.getElementById('profilePicture');
+                const initialsSpan = document.getElementById('userInitials');
+                        
+                profileImg.src = profilePicture;
+                profileImg.style.display = 'block';
+                initialsSpan.style.display = 'none';
+                        
+                profileImg.onerror = function() {
+                    console.error('Failed to load profile image:', profilePicture);
+                    this.style.display = 'none';
+                    initialsSpan.style.display = 'flex';
+                    initialsSpan.textContent = (userData.name?.[0] || 'U').toUpperCase();
+                };
+            }
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+        }
+    }
+
+    initializeHeaderButtons() {
+        const menuBtns = document.querySelectorAll(".menu__btn");
+
+        menuBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const dropdown = btn.nextElementSibling;
+                const isOpen = dropdown.classList.toggle("active");
+                btn.setAttribute("aria-expanded", isOpen);
+                dropdown.setAttribute("aria-hidden", !isOpen);
+            });
+        });
+
+        document.addEventListener("click", e => {
+            menuBtns.forEach(btn => {
+                const dropdown = btn.nextElementSibling;
+                if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.remove("active");
+                    btn.setAttribute("aria-expanded", "false");
+                    dropdown.setAttribute("aria-hidden", "true");
+                }
+            });
+        });
+
+        document.getElementById('editProfileBtn')?.addEventListener('click', () => {
+            window.top.location.href = '#/edit_profile';
+        });
+
+        document.getElementById('logoutBtn')?.addEventListener('click', () => this.performLogout());
+    }
+
     /**
      * Performs user logout by calling backend endpoint and cleaning local storage
      */
     async performLogout() {
-      try {
-        // Get the stored token
-        const token = localStorage.getItem('token');
-        
-        if (token) {
-          // Call the backend logout endpoint
-          const data = await logOutUser(token);
-  
-          //if (response.ok) {
-            //const data = await response.json();
-            //console.log(data.message);
-          //} else {
-            //console.warn('Logout endpoint failed, but proceeding with client-side logout');
-          //}
-        }
-  
-        // Clear localStorage regardless of backend response
-        localStorage.removeItem('token');
-        localStorage.removeItem('id');
-        
-        console.log('User logged out successfully');
-        
-        // Redirect to login page
-        //window.location.href = '../../index.html';
-        location.hash = '#/login';
+        try {
+            const token = this.getTokenFromStorage();
+            
+            if (token) {
+                await logOutUser(token);
+            }
 
-      } catch (error) {
-        console.error('Error during logout:', error);
-        
-        // Even if there's an error, clear the session and redirect
-        localStorage.removeItem('token');
-        localStorage.removeItem('id');
-        location.hash = '#/login';
-      }
+            // Clear localStorage
+            localStorage.removeItem('token');
+            localStorage.removeItem('id');
+            
+            location.hash = '#/login';
+        } catch (error) {
+            console.error('Error during logout:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('id');
+            location.hash = '#/login';
+        }
     }
     async editProfile(){
   

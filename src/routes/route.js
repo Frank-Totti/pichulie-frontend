@@ -29,17 +29,30 @@ async function loadView(name) {
   app.innerHTML = html;
   console.log("Vista inyectada en #principal-app");
 
-  loadCSS(`/src/styles/${name}_styles.css`);
+  //loadCSS(`/src/styles/${name}_styles.css`);
+  loadCSS(`${name}_styles.css`);
 
   if (name === 'login') initLogin();
   if (name === 'dashboard') initDashboard();
   if (name === 'about_us') initAboutUs();
+  if (name === 'sitemap') initSiteMap();
   if (name === 'edit_profile') initializeEditProfile();
   if (name === 'new_password') initNewPassword();
   if (name === 'recovery') initRecover();
   if  (name === 'register') initRegister();
 }
 
+function loadCSS(file) {
+  const url = new URL(`../styles/${file}`, import.meta.url).href;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = url;
+  link.dataset.viewStyle = true;
+  document.head.appendChild(link);
+}
+
+/*
 function loadCSS(href) {
   // Elimina si ya existe
   document.querySelectorAll(`link[data-view-style]`).forEach(el => el.remove());
@@ -50,6 +63,8 @@ function loadCSS(href) {
   link.dataset.viewStyle = true;
   document.head.appendChild(link);
 }
+
+*/
 
 /**
  * Initialize the hash-based router.
@@ -70,6 +85,7 @@ function handleRoute() {
     'login',
     'dashboard',
     'about_us',
+    'sitemap',
     'edit_profile',
     'new_password',
     'recovery',
@@ -121,13 +137,23 @@ function initRegister(){
   }
 
 function initAboutUs(){
-  document.getElementById("today-button").addEventListener("click",async function () {
+  // First initialize the page
+  import('../scripts/about_us.controller.js')
+    .then(module => module.initAboutPage())
+    .catch(err => console.error('Error loading about page:', err));
 
+  // Then set up the today button click handler
+  document.getElementById("today-button")?.addEventListener("click", () => {
     console.log("Today button clicked");
-    localStorage.setItem("currentDate",new Date());
+    localStorage.setItem("currentDate", new Date().toISOString());
     location.hash = '#/dashboard';
-    
-})
+  });
+}
+
+function initSiteMap(){
+  import('../scripts/sitemap.controller.js')
+    .then(module => module.initSiteMap())
+    .catch(err => console.error('Error loading about page:', err));
 }
 
 function initRecover(){

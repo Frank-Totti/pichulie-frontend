@@ -1,29 +1,6 @@
-document.getElementById("today-button").addEventListener("click",async function () {
-
-    console.log("Today button clicked");
-    localStorage.setItem("currentDate",new Date());
-    window.location.href = '#dashboard';
-    
-})
-
-export function initAboutPage() {
+export function initSiteMap() {
   initializeHeaderButtons();
   updateUserDisplay();
-}
-
-// JWT Token handling functions
-function decodeJWT(token) {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
-    } catch (error) {
-        console.error('Error decoding JWT:', error);
-        return null;
-    }
 }
 
 function getTokenFromStorage() {
