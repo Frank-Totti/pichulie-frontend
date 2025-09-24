@@ -61,6 +61,11 @@ export class EditProfileController {
       if (cancelBtn) {
         cancelBtn.addEventListener('click', () => this.handleCancel())
       }
+
+      const deleteBtn = document.getElementById('deleteBtn')
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => this.handleDelete())
+      }
   
       const closeSuccessModal = document.getElementById('closeSuccessModal')
       if (closeSuccessModal) {
@@ -390,6 +395,73 @@ export class EditProfileController {
       //window.location.href = '../dashboard/dashboard.html';
       location.hash = '#/dashboard';
     }
+
+    async handleDelete() {
+      const deleteModal = document.getElementById('deleteModal');
+      const cancelBtn = document.getElementById('cancelDeleteBtn');
+      const closeBtn = document.getElementById('closeDeleteModal');
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+      const confirmText = document.getElementById('deleteConfirmText');
+  
+      // Show modal
+      deleteModal.style.display = 'flex';
+  
+      // Enable/disable delete button based on confirmation text only
+      const validateInputs = () => {
+          const isTextCorrect = confirmText.value === 'DELETE ACCOUNT';
+          confirmBtn.disabled = !isTextCorrect;
+      };
+  
+      // Add input listener
+      confirmText.addEventListener('input', validateInputs);
+  
+      // Handle close/cancel
+      const closeModal = () => {
+          deleteModal.style.display = 'none';
+          confirmText.value = '';
+          confirmBtn.disabled = true;
+      };
+  
+      cancelBtn.addEventListener('click', closeModal);
+      closeBtn.addEventListener('click', closeModal);
+  
+      // Handle delete confirmation
+      confirmBtn.addEventListener('click', async () => {
+          try {
+              const token = getTokenFromStorage();
+              if (!token) {
+                  throw new Error('No authentication token found');
+              }
+  
+              // Using the correct endpoint URL as defined in your route
+              const deleteResponse = await fetch(`${API_PORT}/api/users/delete-account`, {
+                  method: 'DELETE',
+                  headers: {
+                      'Authorization': `Bearer ${token}`
+                  }
+              });
+  
+              // Backend returns 204 on success
+              if (deleteResponse.status === 204) {
+                  // Clear all storage
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  
+                  // Show success message before redirect
+                  alert('Your account has been successfully deleted.');
+                  
+                  // Redirect to login
+                  location.hash = '#/login';
+              } else {
+                  const errorData = await deleteResponse.json();
+                  throw new Error(errorData.message || 'Failed to delete account');
+              }
+          } catch (error) {
+              console.error('Error during account deletion:', error);
+              alert('Failed to delete account. Please try again.');
+          }
+      });
+  }
   
     hasUnsavedChanges() {
       const passwordField = document.getElementById('userPassword')

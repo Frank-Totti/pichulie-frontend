@@ -8,17 +8,24 @@
     --thin-black: 1px solid rgba(0,0,0,0.9);
   }
   
-  html, body {
+  html {
     height: 100%;
+    width: 100%;
   }
-  
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: #ffffff;
     margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    min-height: 100%;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    position: relative;
   }
   
 /* About Us View Styles */
@@ -450,7 +457,7 @@
     padding: 8px 18px 12px 18px; 
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
     background: transparent;
     min-height: 0; 
     height: 100%;
@@ -515,17 +522,17 @@
   
   .task-column {
     background: white;
-    border: 1px solid #e6e6e6;
+    border: 1px solid #cacaca;
     border-radius: 12px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    min-height: 260px;
     display: flex;
     flex-direction: column;
-    height: 100%;
     box-shadow: 0 8px 22px rgba(17,24,39,0.04);
+    min-height: 20%;
+    max-height: 300px;
   }
   
   .column-title {
@@ -546,7 +553,7 @@
   
   .task-card {
     background: #ffffff;
-    border: 1px solid #eee;
+    border: 1px solid #c6c6c6;
     border-radius: 10px;
     padding: 14px 16px;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -656,7 +663,9 @@
     font-size: 14px;
     color: #222;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
-    height: 84px;
+    margin-top: 31px;
+    align-items: center;
+    height: 90px;
   }
   .footer-inner {
     width: 100%;
@@ -1161,4 +1170,30 @@
   
   .btn-delete:hover {
     background: #e03030;
+  }
+
+  /* Ensure page fills viewport at all zoom levels */
+  @media screen {
+    html, body {
+      height: 100vh;
+      min-height: 100vh;
+      width: 100vw;
+      min-width: 100vw;
+    }
+    
+    body {
+      display: flex !important;
+      flex-direction: column !important;
+      overflow-x: hidden;
+    }
+    
+    .app {
+      flex: 1 1 auto !important;
+      min-height: calc(100vh - 200px) !important;
+    }
+    
+    .main-content {
+      flex: 1 1 auto !important;
+      min-height: calc(100vh - 300px) !important;
+    }
   }
