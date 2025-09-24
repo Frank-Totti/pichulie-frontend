@@ -140,20 +140,46 @@
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="taskTitle">Title:</label>
-                    <input type="text" id="taskTitle" class="task-input">
+            <!-- Create Task Layout -->
+            <div class="create-layout">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskTitle">Title:</label>
+                        <input type="text" id="taskTitle" class="task-input">
+                    </div>
+
+                    <div class="form-group date-time-group">
+                        <div>
+                            <label for="taskTime">Hour:</label>
+                            <div class="time-input-container">
+                                <input type="time" id="taskTime" class="task-input time-input">
+                                <span class="time-icon"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <div class="form-group date-time-group">
+            <!-- Edit Task Layout -->
+            <div class="edit-layout" style="display: none;">
+                <div class="form-group title-centered">
+                    <label for="taskTitleEdit">Title:</label>
+                    <input type="text" id="taskTitleEdit" class="task-input">
+                </div>
+                
+                <div class="form-row date-time-row">
+                    <div class="form-group">
+                        <label for="taskDate">Date:</label>
+                        <div class="date-input-container">
+                            <input type="date" id="taskDate" class="task-input date-input">
+                            <span class="date-icon"></span>
+                        </div>
+                    </div>
                     
-
-
-                    <div>
-                        <label for="taskTime">Hour:</label>
+                    <div class="form-group">
+                        <label for="taskTimeEdit">Hour:</label>
                         <div class="time-input-container">
-                            <input type="time" id="taskTime" class="task-input time-input">
+                            <input type="time" id="taskTimeEdit" class="task-input time-input">
                             <span class="time-icon"></span>
                         </div>
                     </div>

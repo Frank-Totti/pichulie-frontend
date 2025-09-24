@@ -641,6 +641,39 @@
   .date-time-group > div {
     flex: 1;
   }
+
+  /* Edit Layout Styles */
+  .title-centered {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .title-centered label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .title-centered .task-input {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .date-time-row {
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .date-time-row .form-group {
+    flex: 0 0 auto;
+    min-width: 150px;
+  }
+
+  .date-time-row .form-group label {
+    text-align: center;
+    display: block;
+    margin-bottom: 8px;
+  }
   
   .date-input-container,
   .time-input-container {
