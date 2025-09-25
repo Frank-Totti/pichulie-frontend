@@ -30,7 +30,11 @@ class TaskManager {
           this.currentDate = new Date(savedDate);
       } else {
           this.currentDate = new Date();
-          localStorage.setItem("currentDate", this.currentDate.toISOString());
+          const year = this.currentDate.getFullYear();
+          const month = String(this.currentDate.getMonth() + 1).padStart(2, "0");
+          const day = String(this.currentDate.getDate()).padStart(2, "0");
+          const localDate = `${year}-${month}-${day}`;
+          localStorage.setItem("currentDate", localDate);
       }
       //this.day = new Date().toISOString().split("T")[0];
         this.init();
@@ -39,7 +43,7 @@ class TaskManager {
     }
   
     init() {
-      console.log(this.currentDate.toISOString().split("T")[0]);
+      //console.log(this.currentDate.toISOString().split("T")[0]);
       this.bindEvents()
       this.updateDateDisplay()
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
@@ -51,7 +55,7 @@ class TaskManager {
 
       document.getElementById("today").addEventListener("click", async (e) => {
         this.currentDate = new Date();
-        localStorage.setItem("currentDate", this.currentDate.toISOString());
+        localStorage.setItem("currentDate", this.currentDate.toISOString().split("T")[0]);
         //console.log(this.currentDate.toISOString().split("T")[0]);
         //await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
         window.location.reload();
@@ -137,8 +141,8 @@ class TaskManager {
       const modalTitle = document.getElementById("modalTitle")
       const actionBtn = document.getElementById("taskActionBtn")
       const cancelBtn = document.querySelector(".btn-cancel")
-      const createLayout = document.querySelector(".create-layout")
-      const editLayout = document.querySelector(".edit-layout")
+      //const createLayout = document.querySelector(".create-layout")
+      //const editLayout = document.querySelector(".edit-layout")
   
       // Set modal to create or edit mode
       if (isEdit) {
@@ -147,21 +151,22 @@ class TaskManager {
         actionBtn.classList.add("edit-mode")
         cancelBtn.textContent = "DROP"
         cancelBtn.classList.add("drop-mode")
-        createLayout.style.display = "none"
-        editLayout.style.display = "block"
-        document.getElementById("taskTitleEdit").focus()
+        //createLayout.style.display = "none"
+        //editLayout.style.display = "block"
+        //document.getElementById("taskTitleEdit").focus()
       } else {
         modalTitle.textContent = "Create Task"
         actionBtn.textContent = "CREATE"
         actionBtn.classList.remove("edit-mode")
         cancelBtn.textContent = "CANCEL"
         cancelBtn.classList.remove("drop-mode")
-        createLayout.style.display = "block"
-        editLayout.style.display = "none"
-        document.getElementById("taskTitle").focus()
+        //createLayout.style.display = "block"
+        //editLayout.style.display = "none"
+        //document.getElementById("taskTitle").focus()
       }
   
       modal.classList.add("active")
+      document.getElementById("taskTitle").focus()
     }
   
     closeModal() {
@@ -177,6 +182,20 @@ class TaskManager {
       document.getElementById("taskTime").value = "12:00"
       
       // Clear edit mode fields
+      /*
+      const titleEditEl = document.getElementById("taskTitleEdit");
+      const timeEditEl = document.getElementById("taskTimeEdit");
+      const dateEl = document.getElementById("taskDate");
+      
+      if (titleEditEl) titleEditEl.value = ""
+      if (timeEditEl) timeEditEl.value = "12:00"
+      if (dateEl) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        dateEl.value = `${year}-${month}-${day}`;
+      }      // Clear edit mode fields
       const titleEditEl = document.getElementById("taskTitleEdit");
       const timeEditEl = document.getElementById("taskTimeEdit");
       const dateEl = document.getElementById("taskDate");
@@ -190,6 +209,7 @@ class TaskManager {
         const day = String(today.getDate()).padStart(2, '0');
         dateEl.value = `${year}-${month}-${day}`;
       }
+      */
       
       document.getElementById("statusTodo").checked = true
       document.getElementById("taskReminder").checked = false
@@ -197,13 +217,13 @@ class TaskManager {
   
     async saveTask() {
       // taskTitleEdit
-      //const title = document.getElementById("taskTitle").value.trim();
-      let title;
-      if (this.editingTask) {
-        title = document.getElementById("taskTitleEdit").value.trim();
-        } else {
-          title = document.getElementById("taskTitle").value.trim();
-      }
+      const title = document.getElementById("taskTitle").value.trim();
+      //let title;
+      //if (this.editingTask) {
+        //title = document.getElementById("taskTitleEdit").value.trim();
+        //} else {
+          //title = document.getElementById("taskTitle").value.trim();
+      //}
       const time = document.getElementById("taskTime").value;
       const description = document.getElementById("taskDescription").value.trim();
       const reminder = document.getElementById("taskReminder").checked;
@@ -236,13 +256,13 @@ class TaskManager {
       if (time) {
         const dateStr = this.currentDate.toISOString().split("T")[0];
         taskDateTime = new Date(`${dateStr}T${time}:00`).toISOString();
+        //taskDateTime = `${dateStr} ${time}:00`;
       } else {
         taskDateTime = this.currentDate.toISOString();
       }
     
       try {
         let data;
-    
         if (this.editingTask) {
           // ESTAMOS EDITANDO
           const taskId = this.editingTask.id;
@@ -257,18 +277,21 @@ class TaskManager {
           data = await updateTask(token, taskId, updatedTask);
         } else {
           // CREANDO NUEVA TAREA
+
+
           const bodyData = {
             title,
             detail: description,
+            remember: reminder,
             status,
-            task_date: taskDateTime
+            task_date: taskDateTime,
           };
     
           data = await createTask(token, bodyData);
         }
     
         this.editingTask = null;
-        await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+        await this.renderTasks(taskDateTime);
         this.closeModal();
     
       } catch (error) {
@@ -413,10 +436,12 @@ class TaskManager {
       const taskId = this.editingTask.id;
     
       // Tomamos valores del modal (usando los IDs de edit mode)
-      const titleEl = document.getElementById("taskTitleEdit");
+      const titleEl = document.getElementById("taskTitle");
+      //const titleEl = document.getElementById("taskTitleEdit");
       const descEl  = document.getElementById("taskDescription");
-      const timeEl  = document.getElementById("taskTimeEdit");
-      const dateEl  = document.getElementById("taskDate");
+      const timeEl  = document.getElementById("taskTime");
+      //const timeEl  = document.getElementById("taskTimeEdit");
+      //const dateEl  = document.getElementById("taskDate");
       const remEl   = document.getElementById("taskReminder");
       const stTodo  = document.getElementById("statusTodo");
       const stIn    = document.getElementById("statusInProcess");
@@ -424,15 +449,14 @@ class TaskManager {
     
       // Formamos la fecha final combinando fecha y hora
       let finalDate = null;
-      if (dateEl?.value && timeEl?.value) {
-        // Create date in local timezone to avoid day shift
-        const [year, month, day] = dateEl.value.split('-');
-        const [hours, minutes] = timeEl.value.split(':');
-        finalDate = new Date(year, month - 1, day, hours, minutes, 0);
-      } else if (timeEl?.value) {
-        const today = new Date();
-        const [hours, minutes] = timeEl.value.split(':');
-        finalDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, 0);
+
+      if (timeEl?.value) {
+
+
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+
+        finalDate = new Date(`${today}T${timeEl.value}:00.000Z`);
       }
     
       const updatedTask = {
@@ -469,12 +493,15 @@ class TaskManager {
         // Traemos la tarea desde el backend
         const task = await this.getTaskById(taskId);
         if (!task) return;
+        console.log(task);
     
         // Rellenar modal con los datos traídos del backend
-        const titleEl = document.getElementById("taskTitleEdit");
+        const titleEl = document.getElementById("taskTitle");
+        //const titleEl = document.getElementById("taskTitleEdit");
         const descEl  = document.getElementById("taskDescription");
-        const timeEl  = document.getElementById("taskTimeEdit");
-        const dateEl  = document.getElementById("taskDate");
+        const timeEl  = document.getElementById("taskTime");
+        //const timeEl  = document.getElementById("taskTimeEdit");
+        //const dateEl  = document.getElementById("taskDate");
         const remEl   = document.getElementById("taskReminder");
         const stTodo  = document.getElementById("statusTodo");
         const stIn    = document.getElementById("statusInProcess");
@@ -492,21 +519,6 @@ class TaskManager {
           timeEl.value = "12:00";
         }
 
-        // date input en formato YYYY-MM-DD si existe task_date
-        if (dateEl && task.task_date) {
-          const d = new Date(task.task_date);
-          // Use local date to avoid timezone issues
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          dateEl.value = `${year}-${month}-${day}`;
-        } else if (dateEl) {
-          const today = new Date();
-          const year = today.getFullYear();
-          const month = String(today.getMonth() + 1).padStart(2, '0');
-          const day = String(today.getDate()).padStart(2, '0');
-          dateEl.value = `${year}-${month}-${day}`;
-        }
     
         // Seleccionar radio según estado
         if (stTodo) stTodo.checked = (task.status === "to do");
@@ -666,7 +678,7 @@ class TaskManager {
   
     changeDate(direction) {
       this.currentDate.setDate(this.currentDate.getDate() + direction)
-      localStorage.setItem("currentDate", this.currentDate);//.toISOString());
+      localStorage.setItem("currentDate", this.currentDate.toISOString().split("T")[0]);//.toISOString());
       this.updateDateDisplay()
       this.updateHeaderDate()
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
