@@ -100,10 +100,10 @@
                     <!-- Profile Form -->
                     <form class="profile-form" id="profileForm">
                         <div class="form-group">
-                            <label for="userName" class="form-label">Full Name</label>
+                            <label for="userNameInput" class="form-label">Full Name</label>
                             <input 
                                 type="text" 
-                                id="userName" 
+                                id="userNameInput" 
                                 name="name" 
                                 class="form-input"
                                 required
@@ -137,44 +137,6 @@
                                 max="122"
                             >
                             <div class="input-hint">Must be between 13 and 122 years old</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="userPassword" class="form-label">Password</label>
-                            <div class="password-input-container">
-                                <input 
-                                    type="password" 
-                                    id="userPassword" 
-                                    name="password" 
-                                    class="form-input password-input" 
-                                    placeholder="Enter new password"
-                                    minlength="8"
-                                >
-                                <button type="button" class="password-toggle" id="passwordToggle">
-                                    <span class="eye-icon">👁️</span>
-                                </button>
-                            </div>
-                            <div class="input-hint">
-                                Password must be at least 8 characters with uppercase, lowercase, and number
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword" class="form-label">Confirm Password</label>
-                            <div class="password-input-container">
-                                <input 
-                                    type="password" 
-                                    id="confirmPassword" 
-                                    name="confirmPassword" 
-                                    class="form-input password-input" 
-                                    placeholder="Confirm new password"
-                                    minlength="8"
-                                >
-                                <button type="button" class="password-toggle" id="confirmPasswordToggle">
-                                    <span class="eye-icon">👁️</span>
-                                </button>
-                            </div>
-                            <div class="input-hint">Re-enter your password to confirm</div>
                         </div>
 
                         <!-- Action Buttons -->

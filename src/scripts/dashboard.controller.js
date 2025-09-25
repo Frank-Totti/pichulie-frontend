@@ -251,14 +251,20 @@ class TaskManager {
         return;
       }
     
-      // Generar fecha y hora en ISO
+      // Generar fecha y hora en formato ISO evitando problemas de timezone
       let taskDateTime;
       if (time) {
-        const dateStr = this.currentDate.toISOString().split("T")[0];
-        taskDateTime = new Date(`${dateStr}T${time}:00`).toISOString();
-        //taskDateTime = `${dateStr} ${time}:00`;
+        // Construir la fecha manualmente para evitar conversiones de timezone
+        const year = this.currentDate.getFullYear();
+        const month = String(this.currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(this.currentDate.getDate()).padStart(2, '0');
+        taskDateTime = `${year}-${month}-${day}T${time}:00.000`;
       } else {
-        taskDateTime = this.currentDate.toISOString();
+        // Para tareas sin hora específica, usar el mediodía del día actual
+        const year = this.currentDate.getFullYear();
+        const month = String(this.currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(this.currentDate.getDate()).padStart(2, '0');
+        taskDateTime = `${year}-${month}-${day}T12:00:00.000`;
       }
     
       try {
@@ -361,19 +367,36 @@ class TaskManager {
       // Usar _id si viene de Mongo, o id local como fallback
       card.dataset.taskId = task._id || task.id
       card.dataset.column = column
-  
+
+      // Extract time from task_date if available
+      let formattedTime = "";
+      if (task.task_date) {
+        try {
+          const date = new Date(task.task_date);
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          formattedTime = this.formatTime(`${hours}:${minutes}`);
+        } catch (error) {
+          console.warn("Error formatting task time:", error);
+        }
+      }
+
+      // Use task.detail for description, fallback to empty string
+      const description = task.detail || "";
+
       card.innerHTML = `
               <div class="task-header">
                   <h3 class="task-title">${task.title}</h3>
                   <button class="task-menu">☰</button>
               </div>
+              ${description ? `<div class="task-description">${description}</div>` : ""}
               <div class="task-meta">
-                  ${task.reminder ? '<span class="task-reminder">Remember</span>' : ""}
-                  ${task.time ? `<span class="task-time">${task.time}</span>` : ""}
-                  ${column === "todo" && task.reminder ? '<span class="task-check">✓</span>' : ""}
+                  ${task.remember ? '<span class="task-reminder">🔔 Remember</span>' : ""}
+                  ${formattedTime ? `<span class="task-time">🕐 ${formattedTime}</span>` : ""}
+                  ${column === "todo" && task.remember ? '<span class="task-check">✓</span>' : ""}
               </div>
           `
-  
+
       return card
     }
   
@@ -447,16 +470,21 @@ class TaskManager {
       const stIn    = document.getElementById("statusInProcess");
       const stFin   = document.getElementById("statusFinished");
     
-      // Formamos la fecha final combinando fecha y hora
+      // Formamos la fecha final combinando fecha y hora evitando timezone issues
       let finalDate = null;
-
       if (timeEl?.value) {
-
-
-        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-
-
-        finalDate = new Date(`${today}T${timeEl.value}:00.000Z`);
+        const today = this.currentDate;
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        finalDate = `${year}-${month}-${day}T${timeEl.value}:00.000`;
+      } else {
+        // Si no hay hora, usar el mediodía del día actual
+        const today = this.currentDate;
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        finalDate = `${year}-${month}-${day}T12:00:00.000`;
       }
     
       const updatedTask = {

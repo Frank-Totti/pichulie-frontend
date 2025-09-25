@@ -105,23 +105,24 @@ export class EditProfileController {
   
     try {
       const data = await getInfoUser(token);
+      console.log("User data received:", data);
+      console.log("Data type:", typeof data);
+      console.log("Data keys:", data ? Object.keys(data) : 'data is null/undefined');
   
-      //console.log("Response object:", response);
+      if (!data) {
+        console.error("No user data received from API");
+        return;
+      }
+
+      // Check if data has user property (nested structure) or direct properties
+      const userData = data.user || data;
+      console.log("Final userData to populate:", userData);
   
-      //if (!response.ok) {
-        //console.error(" Fetch failed with status:", response.status);
-        //const errorText = await response.text();
-        //console.error("Response body:", errorText);
-        //return;
-      //}
-  
-      //const data = await response.json();
-      //console.log(" FULL BACKEND RESPONSE:", JSON.stringify(data, null, 2));
-  
-      this.populateForm(data);
+      this.populateForm(userData);
   
     } catch (error) {
       console.error("Error loading user data:", error);
+      console.error("Error details:", error.message);
     }
   }
   
@@ -129,17 +130,51 @@ export class EditProfileController {
   
     populateForm(userData) {
       console.log("populateForm called with:", userData)
+      
+      if (!userData) {
+        console.error("No userData provided to populateForm");
+        return;
+      }
   
-      const nameInput = document.getElementById('userName')
+      const nameInput = document.getElementById('userNameInput')
       const emailInput = document.getElementById('userEmail')
       const ageInput = document.getElementById('userAge')
       const avatarPreview = document.getElementById('avatarPreview')
+      
+      console.log("Form elements found:", {
+        nameInput: !!nameInput,
+        emailInput: !!emailInput,
+        ageInput: !!ageInput,
+        avatarPreview: !!avatarPreview
+      });
+      
+      console.log("User data fields:", {
+        name: userData.name,
+        email: userData.email,
+        age: userData.age,
+        profile_picture: userData.profile_picture
+      });
   
-      if (nameInput) nameInput.value = userData.name || ""
-      if (emailInput) emailInput.value = userData.email || ""
-      if (ageInput) ageInput.value = userData.age || ""
+      if (nameInput) {
+        nameInput.value = userData.name || ""
+        console.log("Name input populated with:", userData.name);
+      } else {
+        console.error("Name input element not found");
+      }
+      
+      if (emailInput) {
+        emailInput.value = userData.email || ""
+        console.log("Email input populated with:", userData.email);
+      }
+      
+      if (ageInput) {
+        ageInput.value = userData.age || ""
+        console.log("Age input populated with:", userData.age);
+      }
+      
       if (avatarPreview && userData.profile_picture) {
         avatarPreview.src = userData.profile_picture
+        console.log("Avatar preview set to:", userData.profile_picture);
       }
     }
   
