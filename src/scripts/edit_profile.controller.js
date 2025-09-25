@@ -32,6 +32,15 @@ export class EditProfileController {
     }
   
     bindEvents() {
+
+      document.getElementById("today-button").addEventListener("click",async function () {
+
+        console.log("Today button clicked");
+        localStorage.setItem("currentDate",new Date());
+        location.hash = '#/dashboard';
+        
+      })
+
       if (this.form) {
         this.form.addEventListener('submit', (e) => this.handleFormSubmit(e))
       }

@@ -43,18 +43,19 @@ class TaskManager {
       this.bindEvents()
       this.updateDateDisplay()
       this.renderTasks(this.currentDate.toISOString().split("T")[0])
-      this.todayButton()
+      //this.todayButton()
       
     }
   
-    async todayButton(){
-      document.getElementById("today").addEventListener("click", async (e) => {
-        e.preventDefault();
-        this.renderTasks(this.currentDate.toISOString().split("T")[0]);
-      })
-    }
-  
     bindEvents() {
+
+      document.getElementById("today").addEventListener("click", async (e) => {
+        this.currentDate = new Date();
+        localStorage.setItem("currentDate", this.currentDate.toISOString());
+        //console.log(this.currentDate.toISOString().split("T")[0]);
+        //await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+        window.location.reload();
+      });
   
       // Add task buttons
       document.querySelector(".add-task-btn").addEventListener("click", () => this.openModal())
@@ -195,7 +196,14 @@ class TaskManager {
     }
   
     async saveTask() {
-      const title = document.getElementById("taskTitle").value.trim();
+      // taskTitleEdit
+      //const title = document.getElementById("taskTitle").value.trim();
+      let title;
+      if (this.editingTask) {
+        title = document.getElementById("taskTitleEdit").value.trim();
+        } else {
+          title = document.getElementById("taskTitle").value.trim();
+      }
       const time = document.getElementById("taskTime").value;
       const description = document.getElementById("taskDescription").value.trim();
       const reminder = document.getElementById("taskReminder").checked;
@@ -209,7 +217,8 @@ class TaskManager {
           break;
         }
       }
-    
+      
+      //console.log(title);
       if (!title) {
         alert("Please enter a task title");
         return;
@@ -257,19 +266,6 @@ class TaskManager {
     
           data = await createTask(token, bodyData);
         }
-    
-        //console.log("Response status:", response.status);
-        //const rawText = await response.text();
-        //console.log("Raw response body:", rawText);
-    
-        //if (!response.ok) {
-          //throw new Error(`Server returned ${response.status}: ${rawText}`);
-        //}
-    
-        //const data = JSON.parse(rawText);
-        //console.log(this.editingTask ? "Task updated successfully:" : "Task created successfully:", data);
-    
-        //alert(this.editingTask ? "Task updated successfully!" : "Task created successfully!");
     
         this.editingTask = null;
         await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
