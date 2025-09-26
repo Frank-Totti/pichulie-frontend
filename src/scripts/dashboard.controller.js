@@ -27,7 +27,16 @@ class TaskManager {
       //this.currentDate = new Date()//.toISOString().split("T")[0];
       const savedDate = localStorage.getItem("currentDate");
       if (savedDate) {
-          this.currentDate = new Date(savedDate);
+          // Parse the date string manually to avoid timezone issues
+          const dateParts = savedDate.split("-");
+          if (dateParts.length === 3) {
+            const year = parseInt(dateParts[0]);
+            const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+            const day = parseInt(dateParts[2]);
+            this.currentDate = new Date(year, month, day);
+          } else {
+            this.currentDate = new Date();
+          }
       } else {
           this.currentDate = new Date();
           const year = this.currentDate.getFullYear();
@@ -46,7 +55,12 @@ class TaskManager {
       //console.log(this.currentDate.toISOString().split("T")[0]);
       this.bindEvents()
       this.updateDateDisplay()
-      this.renderTasks(this.currentDate.toISOString().split("T")[0])
+      // Create consistent date string format
+      const year = this.currentDate.getFullYear();
+      const month = String(this.currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(this.currentDate.getDate()).padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
+      this.renderTasks(dateString)
       //this.todayButton()
       
     }
@@ -55,9 +69,14 @@ class TaskManager {
 
       document.getElementById("today").addEventListener("click", async (e) => {
         this.currentDate = new Date();
-        localStorage.setItem("currentDate", this.currentDate.toISOString().split("T")[0]);
-        //console.log(this.currentDate.toISOString().split("T")[0]);
-        //await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+        // Store date in YYYY-MM-DD format to avoid timezone issues
+        const year = this.currentDate.getFullYear();
+        const month = String(this.currentDate.getMonth() + 1).padStart(2, "0");
+        const day = String(this.currentDate.getDate()).padStart(2, "0");
+        const dateString = `${year}-${month}-${day}`;
+        localStorage.setItem("currentDate", dateString);
+        //console.log(dateString);
+        //await this.renderTasks(dateString);
         window.location.reload();
       });
   
@@ -297,7 +316,12 @@ class TaskManager {
         }
     
         this.editingTask = null;
-        await this.renderTasks(taskDateTime);
+        // Create date string for rendering tasks
+        const year = this.currentDate.getFullYear();
+        const month = String(this.currentDate.getMonth() + 1).padStart(2, "0");
+        const day = String(this.currentDate.getDate()).padStart(2, "0");
+        const dateString = `${year}-${month}-${day}`;
+        await this.renderTasks(dateString);
         this.closeModal();
     
       } catch (error) {
@@ -664,7 +688,12 @@ class TaskManager {
   
       const task = this.tasks[fromColumn].splice(taskIndex, 1)[0]
       this.tasks[toColumn].push(task)
-      this.renderTasks(this.currentDate.toISOString().split("T")[0])
+      // Create consistent date string format
+      const year = this.currentDate.getFullYear();
+      const month = String(this.currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(this.currentDate.getDate()).padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
+      this.renderTasks(dateString)
     }
   
     async deleteTask(taskId, column) {
@@ -693,7 +722,11 @@ class TaskManager {
         if (taskIndex !== -1) {
             this.tasks[column].splice(taskIndex, 1);
             // Re-render tasks to update UI
-            await this.renderTasks(this.currentDate.toISOString().split("T")[0]);
+            const year = this.currentDate.getFullYear();
+            const month = String(this.currentDate.getMonth() + 1).padStart(2, "0");
+            const day = String(this.currentDate.getDate()).padStart(2, "0");
+            const dateString = `${year}-${month}-${day}`;
+            await this.renderTasks(dateString);
         }
 
         alert('Task deleted successfully');
@@ -706,10 +739,15 @@ class TaskManager {
   
     changeDate(direction) {
       this.currentDate.setDate(this.currentDate.getDate() + direction)
-      localStorage.setItem("currentDate", this.currentDate.toISOString().split("T")[0]);//.toISOString());
+      // Store date in YYYY-MM-DD format to avoid timezone issues
+      const year = this.currentDate.getFullYear();
+      const month = String(this.currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(this.currentDate.getDate()).padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
+      localStorage.setItem("currentDate", dateString);
       this.updateDateDisplay()
       this.updateHeaderDate()
-      this.renderTasks(this.currentDate.toISOString().split("T")[0])
+      this.renderTasks(dateString)
     }
   
     updateDateDisplay() {
