@@ -446,23 +446,27 @@ export class EditProfileController {
       const closeBtn = document.getElementById('closeDeleteModal');
       const confirmBtn = document.getElementById('confirmDeleteBtn');
       const confirmText = document.getElementById('deleteConfirmText');
+      const confirmPassword = document.getElementById('deletePassword');
   
       // Show modal
       deleteModal.style.display = 'flex';
   
-      // Enable/disable delete button based on confirmation text only
+      // Enable/disable delete button based on confirmation text and password
       const validateInputs = () => {
           const isTextCorrect = confirmText.value === 'DELETE ACCOUNT';
-          confirmBtn.disabled = !isTextCorrect;
+          const hasPassword = confirmPassword.value.trim().length > 0;
+          confirmBtn.disabled = !(isTextCorrect && hasPassword);
       };
   
-      // Add input listener
+      // Add input listeners
       confirmText.addEventListener('input', validateInputs);
+      confirmPassword.addEventListener('input', validateInputs);
   
       // Handle close/cancel
       const closeModal = () => {
           deleteModal.style.display = 'none';
           confirmText.value = '';
+          confirmPassword.value = '';
           confirmBtn.disabled = true;
       };
   
@@ -476,8 +480,49 @@ export class EditProfileController {
               if (!token) {
                   throw new Error('No authentication token found');
               }
+
+              const password = confirmPassword.value.trim();
+              if (!password) {
+                  alert('Please enter your password to confirm account deletion.');
+                  return;
+              }
+
+              // Verify password locally by attempting a login with current user's email
+              // First, get user info to get the email
+              const userInfo = await getInfoUser(token);
+              const userData = userInfo.user || userInfo;
+              
+              if (!userData || !userData.email) {
+                  throw new Error('Could not retrieve user information');
+              }
+
+              // Attempt to verify password by trying to login with current email and entered password
+              try {
+                  const loginResponse = await fetch(`${API_PORT}/api/users/login`, {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({
+                          email: userData.email,
+                          password: password
+                      })
+                  });
+
+                  if (!loginResponse.ok) {
+                      alert('Incorrect password. Please try again.');
+                      confirmPassword.focus();
+                      confirmPassword.select();
+                      return;
+                  }
+              } catch (loginError) {
+                  alert('Incorrect password. Please try again.');
+                  confirmPassword.focus();
+                  confirmPassword.select();
+                  return;
+              }
   
-              // Using the correct endpoint URL as defined in your route
+              // If we get here, password is correct - proceed with account deletion
               const deleteResponse = await fetch(`${API_PORT}/api/users/delete-account`, {
                   method: 'DELETE',
                   headers: {
